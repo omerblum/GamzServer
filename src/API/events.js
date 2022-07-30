@@ -11,9 +11,7 @@ router.get("/", (req, res) =>
 // Get event
 router.get("/:event_id", (req, res) => 
 {
-  console.log(req.params.event_id)
   const id_to_look_for = req.params.event_id
-  console.log("id we're looking for is" + id_to_look_for)
   const found = events.some(event => event.event_id === id_to_look_for);
   if (found) 
   {
@@ -28,23 +26,17 @@ router.get("/:event_id", (req, res) =>
 
 router.post("/", (req, res) => 
 {  
-  // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
-  const geometry = 
-  {
-    lat: 32.0859,
-    lng: 34.7820
-  }
 
-  const event_details = req.body.event_details
-  event_details.geo = geometry
 
   const newevent = 
   {
     event_id: uuid.v4(),
     // locaion_id should be acotding to the publisher's business location we should alreayd have from his authentication
-    location_id: 2,
+    location_id: uuid.v4(),
     location_name: req.body.location_name,
-    event_details: event_details
+    event_details: req.body.event_details,
+    // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
+    geometry: req.body.geometry
   };
 
   if (!newevent.location_name || !newevent.event_details) 
@@ -55,6 +47,7 @@ router.post("/", (req, res) =>
   events.push(newevent);
 
   res.json(events);
+  console.log("added new event: " + newevent.event_id)
 });
 
 

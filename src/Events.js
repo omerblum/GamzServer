@@ -22,7 +22,7 @@ const events = [
       "location_name": "Mike's place",
       "location_id": "2",
       "event_id": "12",
-      "event": {
+      "event_details": {
         "teams": {
           "team_a": "Manchester UTD",
           "team_b": "Manchester City"
@@ -41,7 +41,7 @@ const events = [
       "location_name": "התדר",
       "location_id": "3",
       "event_id": "5",
-      "event": {        
+      "event_details": {        
         "teams": {
           "team_a": "Barcelona",
           "team_b": "Real Madrid"
