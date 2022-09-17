@@ -15,5 +15,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions)) // Use this after the variable declaration
 
 app.use("/api/events", require("./API/events"));
+app.use("/api/sports", require("./API/sports"));
 
 app.listen(3006, () => console.log('Server started and running on port 3006'));
