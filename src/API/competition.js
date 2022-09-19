@@ -17,10 +17,8 @@ function getCompetition(sport)
 
 router.get("/", (req, res) => 
 {
-    // console.log(get("sport"));
-    const comp = getCompetition("Rugby");
-    console.log(comp)
-    res.json(comp);
+    const sport = req.query.sport;
+    res.json(getCompetition(sport));
 });
 
 module.exports = router;

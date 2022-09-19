@@ -5,7 +5,6 @@ const sports = [ 'Football', 'Rugby', 'Basketball'];
 
 router.get("/", (req, res) => 
 {
-    console.log(sports)
     res.json(sports);
 });
 

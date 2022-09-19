@@ -39,6 +39,8 @@ router.post("/", (req, res) =>
     geometry: req.body.geometry
   };
 
+  // TODO: Check if the event already exists
+
   if (!newevent.location_name || !newevent.event_details) 
   {
     return res.sendStatus(400);

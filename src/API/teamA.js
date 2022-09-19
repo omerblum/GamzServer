@@ -3,7 +3,6 @@ const router = express.Router();
 
 function getTeamA(competition) 
 {
-  console.log("getTeamA: started with competition = " + competition)
   switch(competition) 
   {
       case 'FIFA':
@@ -19,9 +18,8 @@ function getTeamA(competition)
 
 router.get("/", (req, res) => 
 {
-    const comp = getTeamA("FIFA");
-    console.log(comp)
-    res.json(comp);
+    const competition = req.query.competition;
+    res.json(getTeamA(competition));
 });
 
 module.exports = router;
