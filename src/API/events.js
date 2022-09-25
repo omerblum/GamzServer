@@ -2,6 +2,32 @@ const express = require("express");
 const router = express.Router();
 const uuid = require("uuid");
 let events = require("../Events");
+var axios = require('axios');
+
+
+function getGeoByPlaceId(placeId)
+{
+  var config = 
+  {
+    method: 'get',
+    url: 'https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=AIzaSyDHHc8MwApWJ5hO0rpLUQwggzJ0eMjhqbw',
+    headers: { }
+  };
+  
+  return axios(config)
+  .then(function (response) 
+  {
+    const data = response.data
+    console.log("getGeoByPlaceId: " + JSON.stringify(data));
+    console.log("getGeoByPlaceId: " + data.result.geometry.location);
+    return data.result.geometry.location
+  })
+  .catch(function (error) 
+  {
+    console.log(error);
+    return null;    
+  });
+}
 
 router.get("/", (req, res) => 
 {
@@ -26,30 +52,49 @@ router.get("/:event_id", (req, res) =>
 
 router.post("/", (req, res) => 
 {  
-
-
-  const newevent = 
+  console.log(req.body.location_name)
+  
+  const placeId = req.body.place_id
+  if (placeId === "")
   {
-    event_id: uuid.v4(),
-    // locaion_id should be acotding to the publisher's business location we should alreayd have from his authentication
-    location_id: uuid.v4(),
-    location_name: req.body.location_name,
-    event_details: req.body.event_details,
-    // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
-    geometry: req.body.geometry
-  };
-
-  // TODO: Check if the event already exists
-
-  if (!newevent.location_name || !newevent.event_details) 
-  {
-    return res.sendStatus(400);
+    console.log("post: recieved empty place ID, can't add the event")
+    res.json(events);
   }
+  else
+  {
+    console.log(req.body.place_id)
 
-  events.push(newevent);
+    getGeoByPlaceId(placeId)
+      .then(geo => 
+        {
+          console.log(geo)
+          const newevent = 
+          {
+            event_id: uuid.v4(),
+            // locaion_id should be acotding to the publisher's business location we should alreayd have from his authentication
+            location_id: uuid.v4(),
+            location_name: req.body.location_name,
+            event_details: req.body.event_details,
+            // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
+            geometry: geo
+          };
 
-  res.json(events);
-  console.log("added new event: " + newevent.event_id)
+          console.log(newevent)
+
+          // TODO: Check if the event already exists
+
+          if (!newevent.location_name || !newevent.event_details) 
+          {
+            return res.sendStatus(400);
+          }
+
+          events.push(newevent);
+
+          res.json(events);
+          console.log("added new event: " + newevent.event_id)
+
+        })    
+  }  
 });
 
 
