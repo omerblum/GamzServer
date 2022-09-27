@@ -3,6 +3,7 @@ const events = [
       "location_name": "המזג",
       "location_id": "1",
       "event_id": "1",
+      "game_id": 1003,
       "event_details": {        
         "teams": {
           "team_a": "Hapoel TLV",
@@ -22,6 +23,7 @@ const events = [
       "location_name": "Mike's place",
       "location_id": "2",
       "event_id": "12",
+      "game_id": 28,
       "event_details": {
         "teams": {
           "team_a": "Manchester UTD",
@@ -41,6 +43,7 @@ const events = [
       "location_name": "התדר",
       "location_id": "3",
       "event_id": "5",
+      "game_id": 19,  
       "event_details": {        
         "teams": {
           "team_a": "Barcelona",

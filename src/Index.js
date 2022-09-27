@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions)) // Use this after the variable declaration
 
 app.use("/api/events", require("./API/events"));
+app.use("/api/games", require("./API/games"));
 app.use("/api/sports", require("./API/sports"));
 app.use("/api/competition", require("./API/competition"));
 app.use("/api/teamA", require("./API/teamA"));

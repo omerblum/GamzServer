@@ -5,7 +5,7 @@ let events = require("../Events");
 var axios = require('axios');
 
 
-function getGeoByPlaceId(placeId)
+function getGeoAnaNameByPlaceId(placeId)
 {
   var config = 
   {
@@ -20,7 +20,7 @@ function getGeoByPlaceId(placeId)
     const data = response.data
     console.log("getGeoByPlaceId: " + JSON.stringify(data));
     console.log("getGeoByPlaceId: " + data.result.geometry.location);
-    return data.result.geometry.location
+    return data.result
   })
   .catch(function (error) 
   {
@@ -64,19 +64,20 @@ router.post("/", (req, res) =>
   {
     console.log(req.body.place_id)
 
-    getGeoByPlaceId(placeId)
-      .then(geo => 
+    getGeoAnaNameByPlaceId(placeId)
+      .then(data => 
         {
-          console.log(geo)
+          console.log(data)
           const newevent = 
           {
             event_id: uuid.v4(),
             // locaion_id should be acotding to the publisher's business location we should alreayd have from his authentication
             location_id: uuid.v4(),
-            location_name: req.body.location_name,
+            location_name: data.name,
             event_details: req.body.event_details,
+            game_id: req.body.game_id,
             // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
-            geometry: geo
+            geometry: data.geometry.location
           };
 
           console.log(newevent)
