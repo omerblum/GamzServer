@@ -3,14 +3,15 @@ const router = express.Router();
 const uuid = require("uuid");
 let events = require("../Events");
 var axios = require('axios');
-
+const apiKey = process.env['REACT_APP_GOOGLE_API_KEY']
 
 function getGeoAnaNameByPlaceId(placeId)
-{
+{  
+  const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
   var config = 
   {
     method: 'get',
-    url: 'https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=AIzaSyDHHc8MwApWJ5hO0rpLUQwggzJ0eMjhqbw',
+    url: url,
     headers: { }
   };
   
@@ -51,9 +52,7 @@ router.get("/:event_id", (req, res) =>
 
 
 router.post("/", (req, res) => 
-{  
-  console.log(req.body.location_name)
-  
+{    
   const placeId = req.body.place_id
   if (placeId === "")
   {
@@ -71,20 +70,27 @@ router.post("/", (req, res) =>
           const newevent = 
           {
             event_id: uuid.v4(),
-            // locaion_id should be acotding to the publisher's business location we should alreayd have from his authentication
-            location_id: uuid.v4(),
-            location_name: data.name,
-            event_details: req.body.event_details,
+            // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
             game_id: req.body.game_id,
+            place_id: placeId,
+            place_name: data.name,
+            // Approved event should be according to who created the event
+            approved_event: false,
+            team_a: req.body.team_a,
+            team_b: req.body.team_b,
+            competition: req.body.competition,
+            event_date: req.body.event_date,
+            event_time: req.body.event_time,
             // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
-            geometry: data.geometry.location
+            lat: data.geometry.location.lat,
+            lng: data.geometry.location.lng
           };
 
           console.log(newevent)
 
           // TODO: Check if the event already exists
 
-          if (!newevent.location_name || !newevent.event_details) 
+          if (!newevent.place_name || !newevent.place_id) 
           {
             return res.sendStatus(400);
           }
