@@ -8,8 +8,7 @@ const games = [ {
     "competition": "Israel premier league",
     "game_date": "17/06/2022",
     "game_time": "20:00",
-    "sport": "Football",
-    "approved_event": false
+    "sport": "Football"
     },
   
   {
@@ -19,8 +18,7 @@ const games = [ {
     "competition": "English premier league",
     "game_date": "17/06/2022",
     "game_time": "20:00",
-    "sport": "Football",
-    "approved_event": false
+    "sport": "Football"
   },
   {
     "game_id": 19,   
@@ -29,8 +27,7 @@ const games = [ {
     "competition": "EPL",
     "game_date": "17/06/2022",
     "game_time": "20:00",
-    "sport": "Football",
-    "approved_event": true
+    "sport": "Football"
   }];
 
 router.get("/", (req, res) => 
