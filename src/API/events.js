@@ -3,7 +3,30 @@ const router = express.Router();
 const uuid = require("uuid");
 let events = require("../Events");
 var axios = require('axios');
+const eventsDB = require('../Database/eventsDB');
+// let mysql = require('mysql');
 const apiKey = process.env['REACT_APP_GOOGLE_API_KEY']
+
+
+
+
+// function getAllEventsToday()
+// {
+//   let sql = `SELECT * FROM livedbdev.events`;
+//   return connection.query(sql, (error, results, fields) => 
+//   {
+//     console.log(results)
+//     if (error) 
+//     {
+//       return console.error(error.message);
+//     }
+
+//     return results;
+//   });
+// }
+
+
+
 
 function getGeoAnaNameByPlaceId(placeId)
 {  
@@ -19,20 +42,21 @@ function getGeoAnaNameByPlaceId(placeId)
   .then(function (response) 
   {
     const data = response.data
-    console.log("getGeoByPlaceId: " + JSON.stringify(data));
-    console.log("getGeoByPlaceId: " + data.result.geometry.location);
+    console.log(`getGeoByPlaceId: Successfuly got location for placeID ${placeId}`);
     return data.result
   })
   .catch(function (error) 
   {
-    console.log(error);
+    console.log(`getGeoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
     return null;    
   });
 }
 
-router.get("/", (req, res) => 
+router.get("/", async (req, res) => 
 {
-  res.json(events);
+  var allEventsToday = await eventsDB.getTodayEvents();
+
+  res.send(allEventsToday)  
 });
 
 // Get event
@@ -61,13 +85,10 @@ router.post("/", (req, res) =>
   }
   else
   {
-    console.log(req.body.place_id)
-
     getGeoAnaNameByPlaceId(placeId)
-      .then(data => 
+      .then(async data => 
         {
-          console.log(data)
-          const newevent = 
+          const newEvent = 
           {
             event_id: uuid.v4(),
             // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
@@ -81,25 +102,36 @@ router.post("/", (req, res) =>
             competition: req.body.competition,
             event_date: req.body.event_date,
             event_time: req.body.event_time,
-            // Geometry should be acording to the publihser's business location we should alreayd have from his authentication
+            lng: data.geometry.location.lng,
             lat: data.geometry.location.lat,
-            lng: data.geometry.location.lng
           };
 
-          console.log(newevent)
+          var addedSuccessfully = false;
 
           // TODO: Check if the event already exists
-
-          if (!newevent.place_name || !newevent.place_id) 
+          if (await eventsDB.eventExists(newEvent))
           {
+            console.log("The event already exists, nothing to do")
             return res.sendStatus(400);
           }
+          else
+          {
+            console.log("Trying to add new event")
+            addedSuccessfully = await eventsDB.addEvent(newEvent);
+          }
 
-          events.push(newevent);
+          if (!addedSuccessfully) 
+          {
+            console.log("Failed adding new event")
 
-          res.json(events);
-          console.log("added new event: " + newevent.event_id)
-
+            return res.sendStatus(400);
+          }
+          else
+          {
+            console.log("added new event succesffuly with event ID: " + newEvent.event_id)
+            const allEvents = await eventsDB.getTodayEvents();
+            return res.json(allEvents);
+          }         
         })    
   }  
 });
