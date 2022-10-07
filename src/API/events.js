@@ -1,57 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const uuid = require("uuid");
-let events = require("../Events");
 var axios = require('axios');
 const eventsDB = require('../Database/eventsDB');
-// let mysql = require('mysql');
+
+
 const apiKey = process.env['REACT_APP_GOOGLE_API_KEY']
 
 
 
-
-// function getAllEventsToday()
-// {
-//   let sql = `SELECT * FROM livedbdev.events`;
-//   return connection.query(sql, (error, results, fields) => 
-//   {
-//     console.log(results)
-//     if (error) 
-//     {
-//       return console.error(error.message);
-//     }
-
-//     return results;
-//   });
-// }
-
-
-
-
-function getGeoAnaNameByPlaceId(placeId)
-{  
-  const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
-  var config = 
-  {
-    method: 'get',
-    url: url,
-    headers: { }
-  };
-  
-  return axios(config)
-  .then(function (response) 
-  {
-    const data = response.data
-    console.log(`getGeoByPlaceId: Successfuly got location for placeID ${placeId}`);
-    return data.result
-  })
-  .catch(function (error) 
-  {
-    console.log(`getGeoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
-    return null;    
-  });
-}
-
+// Get all events occur today
 router.get("/", async (req, res) => 
 {
   var allEventsToday = await eventsDB.getTodayEvents();
@@ -59,14 +17,17 @@ router.get("/", async (req, res) =>
   res.send(allEventsToday)  
 });
 
-// Get event
-router.get("/:event_id", (req, res) => 
+
+
+// Get specific event
+router.get("/:event_id", async (req, res) => 
 {
+  var allEventsToday = await eventsDB.getTodayEvents();
   const id_to_look_for = req.params.event_id
-  const found = events.some(event => event.event_id === id_to_look_for);
+  const found = allEventsToday.some(event => event.event_id === id_to_look_for);
   if (found) 
   {
-    res.json(events.filter(event => event.event_id === id_to_look_for));
+    res.json(allEventsToday.filter(event => event.event_id === id_to_look_for));
   }
   else
   {
@@ -75,13 +36,15 @@ router.get("/:event_id", (req, res) =>
 });
 
 
-router.post("/", (req, res) => 
+
+// Add new event
+router.post("/", async (req, res) => 
 {    
   const placeId = req.body.place_id
   if (placeId === "")
   {
     console.log("post: recieved empty place ID, can't add the event")
-    res.json(events);
+    return res.sendStatus(400);
   }
   else
   {
@@ -137,45 +100,72 @@ router.post("/", (req, res) =>
 });
 
 
-//Update event
-router.put("/:event_id", (req, res) => 
-{
-  const found = events.some(event => event.event_id === req.params.event_id);
-  if (found) 
-  {
-    const updateevent = req.body;
-    events.forEach(event => 
-    {
-      if (event.event_id === req.params.event_id) 
-      {
-        // update the event here
-        res.json({ msg: "event updated", event });
-      }
-    });
-  } 
-  else 
-  {
-    res.sendStatus(400);
-  }
-});
+// //Update event
+// router.put("/:event_id", async (req, res) => 
+// {
+//   var allEventsToday = await eventsDB.getTodayEvents();
+//   const found = allEventsToday.some(event => event.event_id === req.params.event_id);
+//   if (found) 
+//   {
+//     const updateevent = req.body;
+//     allEventsToday.forEach(event => 
+//     {
+//       if (event.event_id === req.params.event_id) 
+//       {
+//         // update the event here
+//         res.json({ msg: "event updated", event });
+//       }
+//     });
+//   } 
+//   else 
+//   {
+//     res.sendStatus(400);
+//   }
+// });
 
  
-//Delete event
-router.delete("/:event_id", (req, res) => 
-{
-  const found = events.some(event => event.event_id === req.params.event_id)
-  if (found) 
+// //Delete event
+// router.delete("/:event_id", (req, res) => 
+// {
+//   const found = events.some(event => event.event_id === req.params.event_id)
+//   if (found) 
+//   {
+//     events = events.filter(event => event.event_id !== req.params.event_id)
+//     res.json({
+//       msg: "event deleted",
+//       events
+//     });
+//   } 
+//   else
+//   {
+//     res.sendStatus(400);
+//   }
+// });
+
+
+
+function getGeoAnaNameByPlaceId(placeId)
+{  
+  const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
+  var config = 
   {
-    events = events.filter(event => event.event_id !== req.params.event_id)
-    res.json({
-      msg: "event deleted",
-      events
-    });
-  } 
-  else
+    method: 'get',
+    url: url,
+    headers: { }
+  };
+  
+  return axios(config)
+  .then(function (response) 
   {
-    res.sendStatus(400);
-  }
-});
+    const data = response.data
+    console.log(`getGeoByPlaceId: Successfuly got location for placeID ${placeId}`);
+    return data.result
+  })
+  .catch(function (error) 
+  {
+    console.log(`getGeoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
+    return null;    
+  });
+}
 
 module.exports = router;

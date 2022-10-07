@@ -1,23 +1,6 @@
 const mySqlPassword = process.env['REACT_APP_MYSQL_PASSWORD']
 const knex = require('knex');
-// let connection = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     password: mySqlPassword,
-//     database: 'livedbdev'
-//   });
-  
-//   connection.connect(function(err) {
-//     if (err) {
-//       return console.error('error: ' + err.message);
-//     }
-  
-//     console.log('Connected to the MySQL server.');
-//   });
-
-/* 
-    This class handle all requests to the data base
-*/
+var moment = require('moment');
 
 // Connecting to the DB
 const db = knex({
@@ -26,17 +9,24 @@ const db = knex({
         host : 'localhost',
         user : 'root',
         password : mySqlPassword,
-        database : 'livedbdev',        
+        database : 'livedbdev',
+        typeCast: function (field, next) {
+            if (field.type == 'DATE') {
+              return moment(field.string()).format('YYYY-MM-DD');
+            }
+            return next();
+          }                
     }
 });
 
+const c_eventsTableName = "events"
 
 
 /* Get today events */
 // Need to add filter by day
 async function getTodayEvents()
 {
-    var result = await db.select('*').from('events');
+    var result = await db.select('*').from(c_eventsTableName);
 
     return result;
 }
@@ -46,7 +36,7 @@ async function addEvent(newEvent)
 {
     var wasInserted = true;
     //inserting to table 'events' the new event
-    await db('events')
+    await db(c_eventsTableName)
         .insert(newEvent)
         .catch(error =>
         { 
@@ -61,9 +51,8 @@ async function eventExists(event)
 {
     const { game_id , place_id, event_date, event_time} = event;
     console.log(`eventExists: Checking if an event exists with the following details: game_id: ${game_id}, place_id: ${place_id}, event_date: ${event_date}, event_time: ${event_time}`)
-    var eventsFound = await db('events').select()
+    var eventsFound = await db(c_eventsTableName).select()
                     .where({game_id: game_id, place_id: place_id, event_date: event_date, event_time: event_time})
-    console.log(eventsFound.length === 0)
     if (eventsFound.length === 0)
     {
         console.log("event doesn't exist")
