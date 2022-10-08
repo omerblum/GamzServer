@@ -62,8 +62,24 @@ async function eventExists(event)
     {
         console.log("event exist")
         return true;
-
     }   
+}
+
+async function updateIsVerifiedEvent(event_id, is_verified)
+{
+    console.log(`updating the following event ID: ${event_id} with the following is_verified state: ${is_verified}`)
+    var wasUpdated = true;
+    //inserting to table 'events' the new event
+    await db(c_eventsTableName)
+        .update({is_verified})
+        .where({event_id})
+        .catch(error =>
+        { 
+            console.log(error);
+            wasUpdated = false
+        })
+    
+    return wasUpdated;
 }
 
 // async function profileEditVolunteer(updatedVolunteer)
@@ -110,5 +126,6 @@ async function eventExists(event)
 exports.getTodayEvents = getTodayEvents;
 exports.addEvent = addEvent;
 exports.eventExists = eventExists;
+exports.updateIsVerifiedEvent = updateIsVerifiedEvent;
 
 

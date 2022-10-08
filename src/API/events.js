@@ -36,6 +36,41 @@ router.get("/:event_id", async (req, res) =>
 });
 
 
+// Update events is_verified status
+router.put("/", async (req, res) => 
+{
+  var allEventsToday = await eventsDB.getTodayEvents();
+  const allEventsToUpdate = req.body
+  for (const eventToUpdate of allEventsToUpdate)
+  {
+    const event_id = eventToUpdate.event_id
+    const found = allEventsToday.some(event => event.event_id === event_id);
+    if (found) 
+    {
+      const is_verified = eventToUpdate.is_verified
+      console.log(`Updating event: ${event_id} with the following is_verified status: ${is_verified}`)
+      const updateSucceeded = await eventsDB.updateIsVerifiedEvent(event_id, is_verified)
+      if (updateSucceeded)
+      {
+        console.log("updated successfully event with ID " + event_id + " is_verified status to " + is_verified)
+      }
+      else
+      {
+        console.log("failed updating is_verified status of event with ID " + event_id)
+        return res.status(400)
+      }
+    } 
+    else 
+    {
+      res.sendStatus(400);
+      console.log(`Event with ID ${event_id} wasn't found, so we can't update it`)
+    }
+  }
+
+  console.log("successfully upddated all events is_verified status")
+  allEventsToday = await eventsDB.getTodayEvents();
+  return res.json(allEventsToday)
+});
 
 // Add new event
 router.post("/", async (req, res) => 
@@ -58,8 +93,9 @@ router.post("/", async (req, res) =>
             game_id: req.body.game_id,
             place_id: placeId,
             place_name: data.name,
-            // Approved event should be according to who created the event
-            approved_event: false,
+            // Verified event should be according to who created the event
+            is_verified: false,
+            sport: req.body.sport,
             team_a: req.body.team_a,
             team_b: req.body.team_b,
             competition: req.body.competition,
@@ -100,7 +136,7 @@ router.post("/", async (req, res) =>
 });
 
 
-// //Update event
+// //Update specific event
 // router.put("/:event_id", async (req, res) => 
 // {
 //   var allEventsToday = await eventsDB.getTodayEvents();

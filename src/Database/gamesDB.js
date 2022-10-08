@@ -1,24 +1,6 @@
 const mySqlPassword = process.env['REACT_APP_MYSQL_PASSWORD']
 const knex = require('knex');
 var moment = require('moment');
-// let connection = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     password: mySqlPassword,
-//     database: 'livedbdev'
-//   });
-  
-//   connection.connect(function(err) {
-//     if (err) {
-//       return console.error('error: ' + err.message);
-//     }
-  
-//     console.log('Connected to the MySQL server.');
-//   });
-
-/* 
-    This class handle all requests to the data base
-*/
 
 // Connecting to the DB
 const db = knex({
