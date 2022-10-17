@@ -1,5 +1,6 @@
 const express = require("express");
 const cors=require("cors");
+var axios = require('axios');
 
 const corsOptions ={
    origin:'*', 
@@ -21,4 +22,8 @@ app.use("/api/competition", require("./API/competition"));
 app.use("/api/teamA", require("./API/teamA"));
 app.use("/api/teamB", require("./API/teamB"));
 
+app.use("/signin", require("./Security/SignIn"));
+
+      
 app.listen(3006, () => console.log('Server started and running on port 3006'));
+
