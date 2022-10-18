@@ -3,11 +3,24 @@ const router = express.Router();
 const uuid = require("uuid");
 var axios = require('axios');
 const eventsDB = require('../Database/eventsDB');
+const usersDB = require('../Database/usersDB');
 
 
 const apiKey = process.env['REACT_APP_GOOGLE_API_KEY']
 
-
+// TODO: share this method since we use it also in SignIn
+function getUserInfoFromGoogle(token) 
+{  
+    const URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+    return axios.get(URL, { headers: { Authorization: token } })
+     .then(response => {
+         console.log("getUserInfoFromGoogle: successfully got user info from google");
+         return response.data;
+      })
+     .catch((error) => {
+         console.log('getUserInfoFromGoogle: error ' + error);
+      });
+}
 
 // Get all events occur today
 router.get("/", async (req, res) => 
@@ -17,6 +30,24 @@ router.get("/", async (req, res) =>
   res.send(allEventsToday)  
 });
 
+
+
+// Get specific place owner events
+router.get("/myevents", async (req, res) => 
+{
+  console.log("GET myevents: start")
+  const token = req.headers.authorization;
+  var userInfo = await getUserInfoFromGoogle(token)
+
+  console.log(`GET myevents: got user ${userInfo.name} info from google`)
+  const userId = await usersDB.GetUserIdByEmail(userInfo.email, userInfo.name)
+  
+  var myEvents = await eventsDB.getMyEvents(userId);
+  
+  console.log(`GET myevents: got ${myEvents.length} events`)
+  
+  res.send(myEvents)  
+});
 
 
 // Get specific event

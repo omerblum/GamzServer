@@ -19,7 +19,27 @@ const db = knex({
     }
 });
 
-const c_gamesTableName = "games"
+const c_usersTableName = "users"
+
+
+/* Add new event */
+async function AddUser(newUser)
+{
+    const {user_id, name, given_name, email, owns_business} = newUser;
+    console.log(`AddUser: Trying to add new user ${name} with email ${email} user_id ${user_id} given_name ${given_name} owns_business ${owns_business}`)
+    var wasInserted = true;
+    //inserting to table 'users' the new user
+    await db(c_usersTableName)
+        .insert(newUser)
+        .then(console.log(`AddUser: Successfully added user ${name} with email ${email}`))
+        .catch(error =>
+        { 
+            console.log(`AddUser: Failed adding user ${name} with email ${email} due to error: ${error}`);
+            wasInserted = false
+        })
+    
+    return wasInserted;
+}
 
 
 
@@ -49,30 +69,28 @@ async function getTodayGames()
 // }
 
 // Returns if a game exist or not
-async function gameExists(game)
+async function GetUserIdByEmail(email, user_name)
 {
-    const { sport , competition, team_a, team_b, game_date, game_time} = game;
-    console.log(`gameExists: Checking if a game exists with the following details: 
-        sport: ${sport}, competition: ${competition}, team_a: ${team_a}, team_b: ${team_b}, game_date: ${game_date}, game_time: ${game_time}`)
-    var gamesFound = await db(c_gamesTableName).select()
-                    .where({sport: sport, competition: competition, team_a: team_a, team_b: team_b, game_date: game_date, game_time: game_time})
-    if (gamesFound.length === 0)
+    console.log(`GetUserIdByEmail: Checking if a user ${user_name} exists with email ${email}`)
+    var userFound = await db(c_usersTableName).select()
+                    .where({email: email})
+    if (userFound.length === 0)
     {
-        console.log("game doesn't exist")
-        return false;
+        console.log(`GetUserIdByEmail: user ${user_name} with email ${email} doesn't exist`)
+        return null;
     }
     else
     {
-        console.log("game exist")
-        return true;
-
+        console.log(`GetUserIdByEmail: user ${user_name} with email ${email} exist`)
+        return userFound[0].user_id;
     }   
 }
 
 
 
 /* Exporting all functions */
-exports.getTodayGames = getTodayGames;
-exports.gameExists = gameExists;
+exports.AddUser = AddUser;
+exports.GetUserIdByEmail = GetUserIdByEmail;
+
 
 

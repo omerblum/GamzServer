@@ -22,6 +22,9 @@ const db = knex({
 const c_eventsTableName = "events"
 
 
+
+
+
 /* Get today events */
 // Need to add filter by day
 async function getTodayEvents()
@@ -29,6 +32,17 @@ async function getTodayEvents()
     var result = await db.select('*').from(c_eventsTableName);
 
     return result;
+}
+
+/* Returns events that are in a place owned by given user id */
+// TODO: return only events that didn't happen yet
+async function getMyEvents(userID)
+{
+    console.log(`getMyEvents: Fetching events of place owned by user with ID ${userID}`)
+    var events = await db(c_eventsTableName).select()
+    .where({place_owner_id: userID})
+
+    return events;
 }
 
 /* Add new event */
@@ -127,5 +141,6 @@ exports.getTodayEvents = getTodayEvents;
 exports.addEvent = addEvent;
 exports.eventExists = eventExists;
 exports.updateIsVerifiedEvent = updateIsVerifiedEvent;
+exports.getMyEvents = getMyEvents;
 
 
