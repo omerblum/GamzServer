@@ -18,6 +18,7 @@ function getUserInfoFromGoogle(token)
       });
 }
 
+// The method returns false if user already exist, and true if its the first time we add the user
 async function addUserIfNotAlready(userInfo)
 {
     const {name, given_name, email } = userInfo
@@ -28,6 +29,8 @@ async function addUserIfNotAlready(userInfo)
     if (userId)
     {
         console.log(`addUserIfNotAlready: User ${name} exists, and his user ID is ${userId}`)
+        //User already exist
+        return false
     }
     else
     {
@@ -42,6 +45,16 @@ async function addUserIfNotAlready(userInfo)
             owns_business: false
         }
         successfullyAdded = usersDB.AddUser(user)
+        if (successfullyAdded)
+        {
+            // new user - returning true
+            return true
+        }
+        else
+        {
+            console.log("failed adding user")
+            return false
+        }
     }
 }
 
@@ -64,7 +77,10 @@ router.post("/", async (req, res) =>
         res.status(401)
         res.send(false)
     }
-    await addUserIfNotAlready(userInfo)
+    const newUser = await addUserIfNotAlready(userInfo)
+    console.log("new user? ", newUser)
+
+    res.send(newUser)
 
 });
 
