@@ -20,6 +20,9 @@ const db = knex({
 });
 
 const c_usersTableName = "users"
+const c_placesTableName = "places"
+const c_maxEventsCreationInADay = 5;
+
 
 
 /* Add new event */
@@ -43,30 +46,6 @@ async function AddUser(newUser)
 
 
 
-/* Get today games */
-// Need to add filter by day
-async function getTodayGames()
-{
-    var result = await db.select('*').from(c_gamesTableName);
-
-    return result;
-}
-
-// /* Add new event */
-// async function addG(newEvent)
-// {
-//     var wasInserted = true;
-//     //inserting to table 'events' the new event
-//     await db('events')
-//         .insert(newEvent)
-//         .catch(error =>
-//         { 
-//             console.log(error);
-//             wasInserted = false
-//         })
-    
-//     return wasInserted;
-// }
 
 // Returns if a game exist or not
 async function GetUserIdByEmail(email, user_name)
@@ -86,11 +65,125 @@ async function GetUserIdByEmail(email, user_name)
     }   
 }
 
+async function GetIsUserOwingPlace(userId, placeId)
+{
+    console.log(`GetIsUserOwingPlace: Checking if  user ${userId} owns place ${placeId}`)
+    var userOwnPlace = await db(c_placesTableName).select()
+                    .where({place_id: placeId, owner_id: userId})
+    if (userOwnPlace.length === 0)
+    {
+        console.log(`GetIsUserOwingPlace: user ${userId} doesn't owns place ${placeId}`)
+        return false;
+    }
+    else
+    {
+        console.log(`GetIsUserOwingPlace: user ${userId} owns place ${placeId}`)
+        return true;
+    } 
+}
 
+function isToday(date) {
+    const today = new Date();
+  
+    // 👇️ Today's date
+    console.log(today);
+  
+    if (
+      today.getFullYear() === date.getFullYear() &&
+      today.getMonth() === date.getMonth() &&
+      today.getDate() === date.getDate()
+    ) {
+      return true;
+    }
+  
+    return false;
+  }
+
+async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser)
+{
+    console.log("GetCanUserAddEvent: Checking if user ", userId, "owns place ", placeId)
+    if (isPlaceOwnedByUser)
+    {
+        console.log(`GetCanUserAddEvent: The user ${userId} owns the place, so allowing him to create the event throtling`)
+        
+        return true;
+    }
+    
+    // The user don't own the place, so we check when's the last time he added event, and if its today then make sure he's not passing the number of allowed events creation
+    const userInfo = await db(c_usersTableName).select()
+        .where({user_id: userId})
+    const {events_created_today, latest_event_created_date} = userInfo[0];
+
+    const today = new Date()
+    var isSameDateAsToday = true
+    if (latest_event_created_date != "Invalid date")
+    {
+        isSameDateAsToday = isSameDate(new Date(latest_event_created_date), today)
+    }
+    else
+    {
+        isSameDateAsToday = false
+    }   
+    
+    if (isSameDateAsToday && events_created_today >= c_maxEventsCreationInADay)
+    {
+        console.log(`the user ${userId} already reached tpoday's limit, throtlling the request`)
+       
+        return false;
+    }
+    else
+    {
+        var new_events_created_number = 1
+        if (isSameDateAsToday)
+        {
+            new_events_created_number = events_created_today + 1
+        }
+
+        console.log(`the user ${userId} can add new events. He now added ${new_events_created_number} events today`)
+        
+        
+        //inserting to table 'events' the new event
+        var updatedSuccees = true
+        await db(c_usersTableName)
+            .update({latest_event_created_date: today, events_created_today: new_events_created_number})
+            .where({user_id: userId})
+            .catch(error =>
+            {
+                updatedSuccees = false 
+                console.log(error);
+            })
+        if (updatedSuccees)
+        {
+            console.log("succees updating user info about adding new event")
+        }
+
+        return true;
+        
+    }
+
+    // if (latest_event_created_date === )    
+}
+
+function isSameDate(date, today) 
+{  
+    console.log("checking if the following are the same date: ", date, today)
+    if (
+      today.getFullYear() === date.getFullYear() &&
+      today.getMonth() === date.getMonth() &&
+      today.getDate() === date.getDate()
+    ) 
+    {
+      return true;
+    }
+  
+    return false;
+  }
 
 /* Exporting all functions */
 exports.AddUser = AddUser;
 exports.GetUserIdByEmail = GetUserIdByEmail;
+exports.GetIsUserOwingPlace = GetIsUserOwingPlace;
+exports.GetCanUserAddEvent = GetCanUserAddEvent;
 
 
 

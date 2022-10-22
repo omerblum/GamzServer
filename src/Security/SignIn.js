@@ -79,7 +79,7 @@ router.post("/", async (req, res) =>
     }
     const newUser = await addUserIfNotAlready(userInfo)
     console.log("new user? ", newUser)
-
+    
     res.send(newUser)
 
 });

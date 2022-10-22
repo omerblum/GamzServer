@@ -1,6 +1,8 @@
 const mySqlPassword = process.env['REACT_APP_MYSQL_PASSWORD']
 const knex = require('knex');
 var moment = require('moment');
+const placesDB = require('./placesDB');
+
 
 // Connecting to the DB
 const db = knex({
@@ -24,6 +26,24 @@ const c_eventsTableName = "events"
 
 
 
+async function DeleteEvents(eventIDsToDelete)
+{
+    console.log("DeleteEvents: Start with events IDs to delete: ", eventIDsToDelete)  
+    try 
+    {
+        await db.raw('delete from events where event_id in (?)', [eventIDsToDelete])  
+        console.log("DeleteEvents: completed")      
+        
+        return true;
+    } 
+    catch (error) 
+    {
+        console.log("DeleteEvents: Failed with error: ", error)      
+        
+        return false;   
+    }  
+}
+
 
 /* Get today events */
 // Need to add filter by day
@@ -36,13 +56,27 @@ async function getTodayEvents()
 
 /* Returns events that are in a place owned by given user id */
 // TODO: return only events that didn't happen yet
-async function getMyEvents(userID)
+async function getMyEvents(userID, selectOnlyEventIDs)
 {
-    console.log(`getMyEvents: Fetching events of place owned by user with ID ${userID}`)
-    var events = await db(c_eventsTableName).select()
-    .where({place_owner_id: userID})
+    console.log(`getMyEvents: Fetching events of place owned by user with ID ${userID}, and selecting just event IDs? ${selectOnlyEventIDs}`)
+    const placesUserOwn = await placesDB.GetPlacesIdsUserOwn(userID)
+    console.log("getMyEvents: user ", userID, " owns ", placesUserOwn.length, "places")
+    
+    if (placesUserOwn.length == 0)
+    {
+        return []
+    }
 
-    return events;
+    if (selectOnlyEventIDs)
+    {
+        var events = await db.raw('select event_id from events where place_id in (?)', [placesUserOwn])
+    }
+    else
+    {
+        var events = await db.raw('select * from events where place_id in (?)', [placesUserOwn])
+    }
+
+    return events[0];
 }
 
 /* Add new event */
@@ -96,45 +130,6 @@ async function updateIsVerifiedEvent(event_id, is_verified)
     return wasUpdated;
 }
 
-// async function profileEditVolunteer(updatedVolunteer)
-// {
-//     var wasUpdated = true;
-//     const { id ,firstName, lastName, age, city, street, homeNumber, apartmentNumber,floor, howHeardOfUs, email, comments, sex} = updatedVolunteer;
-
-//     await db('volunteers')
-//         .update({firstName: firstName, lastName: lastName, age:age, city:city, street:street, homeNumber:homeNumber,
-//             apartmentNumber:apartmentNumber, floor: floor,howHeardOfUs:howHeardOfUs, email:email, comments:comments , sex:sex})
-//         .where({id:id})
-//         .catch(e => 
-//         {
-//             console.log(e);
-//             wasUpdated = false;
-//         });
-//     return wasUpdated;
-// }
-
-
-/* Sign in */
-
-// async function isUserApproved(phoneNumber)
-// {
-//     var user_data = false;
-//     try 
-//     {
-//         const result = await db.select('*').from('volunteers').where('phoneNumber', phoneNumber);
-//         if (result) 
-//         {
-//             user_data = result;  
-//         } 
-//     }
-//     catch(error)
-//     {
-//         console.log(error);
-//     }
-
-//     return user_data;
-// }
-    
 
 /* Exporting all functions */
 exports.getTodayEvents = getTodayEvents;
@@ -142,5 +137,5 @@ exports.addEvent = addEvent;
 exports.eventExists = eventExists;
 exports.updateIsVerifiedEvent = updateIsVerifiedEvent;
 exports.getMyEvents = getMyEvents;
-
+exports.DeleteEvents = DeleteEvents
 
