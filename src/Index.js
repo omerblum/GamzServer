@@ -27,3 +27,7 @@ app.use("/signin", require("./Security/SignIn"));
 
 
 app.listen(process.env.PORT || 3006, () => console.log('Server started and running on port ', process.env.PORT));
+
+app.get('/', (req, res) => {
+   res.send("Hey Omer, relax, your app is working")
+});
