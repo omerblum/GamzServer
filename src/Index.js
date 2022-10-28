@@ -26,6 +26,5 @@ app.use("/api/teamB", require("./API/teamB"));
 
 app.use("/signin", require("./Security/SignIn"));
 
-      
-app.listen(3006, () => console.log('Server started and running on port 3006'));
 
+app.listen(process.env.PORT || 3006, () => console.log('Server started and running on port '. process.env.PORT));
