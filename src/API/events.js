@@ -112,6 +112,7 @@ router.post("/", async (req, res) =>
 {    
 
   const placeId = req.body.place_id
+  const place_name = req.body.place_name
   if (placeId === "")
   {
     console.log("post: recieved empty place ID, can't add the event")
@@ -131,8 +132,8 @@ router.post("/", async (req, res) =>
       return res.send("Throttling - the user exceeded limit of new events creation today")
     }
 
-
-    console.log("is the user ", userId, "owns place ", placeId, "? ", isPlaceOwnedByUser)
+    
+    console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
 
     getGeoAnaNameByPlaceId(placeId)
       .then(async data => 
@@ -143,7 +144,7 @@ router.post("/", async (req, res) =>
             // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
             game_id: req.body.game_id,
             place_id: placeId,
-            place_name: data.name,
+            place_name: place_name,
             is_verified: isPlaceOwnedByUser,
             sport: req.body.sport,
             team_a: req.body.team_a,
@@ -153,6 +154,7 @@ router.post("/", async (req, res) =>
             event_time: req.body.event_time,
             lng: data.geometry.location.lng,
             lat: data.geometry.location.lat,
+            has_volume: req.body.has_volume,
             user_created_event_id: userId
           };
 

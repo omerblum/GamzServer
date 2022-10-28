@@ -70,6 +70,7 @@ router.post("/", async (req, res) =>
     if (userInfo.email === email)
     {
         console.log("PUT signin: email match, allowing user to continue")
+        res.status(200)
     }
     else
     {
@@ -77,10 +78,16 @@ router.post("/", async (req, res) =>
         res.status(401)
         res.send(false)
     }
-    const newUser = await addUserIfNotAlready(userInfo)
-    console.log("new user? ", newUser)
+
+
+    const isItNewUser = await addUserIfNotAlready(userInfo)
+    console.log("new user? ", isItNewUser)
+    const userInfoFromDB = await usersDB.GetUserInfoByEmail(email)
+    console.log(userInfoFromDB)
+    userInfoFromDB.isItNewUser= isItNewUser
+    console.log(userInfoFromDB)
     
-    res.send(newUser)
+    res.send(userInfoFromDB)
 
 });
 

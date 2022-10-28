@@ -24,7 +24,6 @@ const c_placesTableName = "places"
 const c_maxEventsCreationInADay = 5;
 
 
-
 /* Add new event */
 async function AddUser(newUser)
 {
@@ -33,19 +32,37 @@ async function AddUser(newUser)
     var wasInserted = true;
     //inserting to table 'users' the new user
     await db(c_usersTableName)
-        .insert(newUser)
-        .then(console.log(`AddUser: Successfully added user ${name} with email ${email}`))
+    .insert(newUser)
+    .then(console.log(`AddUser: Successfully added user ${name} with email ${email}`))
         .catch(error =>
-        { 
+            { 
             console.log(`AddUser: Failed adding user ${name} with email ${email} due to error: ${error}`);
             wasInserted = false
         })
     
-    return wasInserted;
+        return wasInserted;
 }
 
 
 
+
+async function GetUserInfoByEmail(email)
+{
+    console.log(`GetUserInfoByEmail: Getting user info drom DB with user email: '${email}'`)
+    var userFound = await db(c_usersTableName).select()
+                    .where({email: email})
+    if (userFound.length === 0)
+    {
+        console.log(`GetUserInfoByEmail: user with email ${email} doesn't exist`)
+        return null;
+    }
+    else
+    {
+        console.log(`GetUserInfoByEmail: user with email '${email}' exist`)
+        return userFound[0];
+    }   
+
+}
 
 // Returns if a game exist or not
 async function GetUserIdByEmail(email, user_name)
@@ -184,6 +201,7 @@ exports.AddUser = AddUser;
 exports.GetUserIdByEmail = GetUserIdByEmail;
 exports.GetIsUserOwingPlace = GetIsUserOwingPlace;
 exports.GetCanUserAddEvent = GetCanUserAddEvent;
+exports.GetUserInfoByEmail = GetUserInfoByEmail;
 
 
 
