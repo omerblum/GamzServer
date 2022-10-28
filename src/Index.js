@@ -25,7 +25,7 @@ app.use("/api/teamB", require("./API/teamB"));
 
 app.use("/signin", require("./Security/SignIn"));
 
-
+console.log(process.env.TEST_KEY)
 app.listen(process.env.PORT || 3006, () => console.log('Server started and running on port ', process.env.PORT));
 
 app.get('/', (req, res) => {
