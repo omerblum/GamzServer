@@ -6,7 +6,7 @@ const eventsDB = require('../Database/eventsDB');
 const usersDB = require('../Database/usersDB');
 
 
-const apiKey = process.env['REACT_APP_GOOGLE_API_KEY']
+const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
 
 // TODO: share this method since we use it also in SignIn
 function getUserInfoFromGoogle(token) 

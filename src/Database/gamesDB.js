@@ -1,30 +1,15 @@
-// const mySqlPassword = process.env['REACT_APP_MYSQL_PASSWORD']
-const mySqlPassword = "c626a9bd"
+const mySqlPassword = process.env.REACT_APP_MYSQL_PASSWORD
+const mySqlUser = process.env.REACT_APP_MYSQL_USER
+const mySqlUrl = process.env.REACT_APP_MYSQL_URL
 const knex = require('knex');
 var moment = require('moment');
 
-// Connecting to the DB
-// const db = knex({
-//     client: 'mysql',
-//     connection: {
-//         host : 'localhost',
-//         user : 'root',
-//         password : mySqlPassword,
-//         database : 'livedbdev',
-//         typeCast: function (field, next) {
-//             if (field.type == 'DATE') {
-//               return moment(field.string()).format('YYYY-MM-DD');
-//             }
-//             return next();
-//           }        
-//     }
-// });
 const db = knex({
     client: 'mysql',
     connection: {
-        host : 'eu-cdbr-west-03.cleardb.net',
-        user : 'b1f969e16b070a',
-        password : '16e932a8',
+        host : mySqlUrl,
+        user : mySqlUser,
+        password : mySqlPassword,
         database : 'heroku_4f3adb018c97aae',
         typeCast: function (field, next) {
             if (field.type == 'DATE') {
