@@ -6,22 +6,7 @@ var moment = require('moment');
 const placesDB = require('./placesDB');
 
 
-// Connecting to the DB
-// const db = knex({
-//     client: 'mysql',
-//     connection: {
-//         host : 'localhost',
-//         user : 'root',
-//         password : mySqlPassword,
-//         database : 'livedbdev',
-//         typeCast: function (field, next) {
-//             if (field.type == 'DATE') {
-//               return moment(field.string()).format('YYYY-MM-DD');
-//             }
-//             return next();
-//           }                
-//     }
-// });
+
 const db = knex({
     client: 'mysql',
     connection: {

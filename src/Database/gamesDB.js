@@ -24,11 +24,15 @@ const c_gamesTableName = "games"
 
 
 
-/* Get today games */
-// Need to add filter by day
-async function getTodayGames()
+/* Get games that didn't happen yet */
+async function GetRelevantGames()
 {
-    var result = await db.select('*').from(c_gamesTableName);
+    const now = moment().format('YYYY-MM-DD')
+    console.log(now)
+    var result = await db.select('*')
+    .where('game_date','>=', [now])
+    .orderBy('game_date', 'asc')
+    .from(c_gamesTableName);
 
     return result;
 }
@@ -54,12 +58,10 @@ async function gameExists(game)
 
     }   
 }
-
-
-    
+ 
 
 /* Exporting all functions */
-exports.getTodayGames = getTodayGames;
+exports.GetRelevantGames = GetRelevantGames;
 exports.gameExists = gameExists;
 
 

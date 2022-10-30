@@ -5,7 +5,7 @@ const gamesDB = require('../Database/gamesDB');
 // Get all games occur today
 router.get("/", async (req, res) => 
 {
-  var allGamesToday = await gamesDB.getTodayGames();
+  var allGamesToday = await gamesDB.GetRelevantGames();
 
   res.send(allGamesToday) 
 });
