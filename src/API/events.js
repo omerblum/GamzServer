@@ -8,6 +8,15 @@ const usersDB = require('../Database/usersDB');
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
 
+async function isUserAdmin(userInfo)
+{
+  const email = userInfo.email
+  const user = await usersDB.GetUserInfoByEmail(email)
+  console.log(user)
+  console.log("isUserAdmin: got user info and is he admin = ", user.is_admin)
+  return user.is_admin
+}
+
 // TODO: share this method since we use it also in SignIn
 function getUserInfoFromGoogle(token) 
 {  
@@ -21,12 +30,12 @@ function getUserInfoFromGoogle(token)
       });
 }
 
-// Get all events occur today
+// Get all events 
 router.get("/", async (req, res) => 
 {
-  var allEventsToday = await eventsDB.getTodayEvents();
+  var allEvents = await eventsDB.getAllEvents();
 
-  res.send(allEventsToday)  
+  res.send(allEvents)  
 });
 
 
@@ -37,33 +46,28 @@ router.get("/myevents", async (req, res) =>
   console.log("GET myevents: start")
   const token = req.headers.authorization;
   var userInfo = await getUserInfoFromGoogle(token)
-
-  console.log(`GET myevents: got user ${userInfo.name} info from google`)
-  const userId = await usersDB.GetUserIdByEmail(userInfo.email, userInfo.name)
-  
-  var myEvents = await eventsDB.getMyEvents(userId, false);
-
-  console.log(`GET myevents: got ${myEvents.length} events`)
-  
-  res.send(myEvents)  
-});
-
-
-// Get specific event
-router.get("/:event_id", async (req, res) => 
-{
-  var allEventsToday = await eventsDB.getTodayEvents();
-  const id_to_look_for = req.params.event_id
-  const found = allEventsToday.some(event => event.event_id === id_to_look_for);
-  if (found) 
+  if (await isUserAdmin(userInfo))
   {
-    res.json(allEventsToday.filter(event => event.event_id === id_to_look_for));
+    console.log("user is ", userInfo.name, "and he is an admin. Returning all events")
+    const allEvents = await eventsDB.getAllEvents()
+
+    return res.send(allEvents)
   }
   else
-  {
-    res.sendStatus(400);
+  { 
+    console.log(`GET myevents: got user ${userInfo.name} info from google`)
+    const userId = await usersDB.GetUserIdByEmail(userInfo.email, userInfo.name)
+    
+    var myEvents = await eventsDB.getMyEvents(userId, false);
+    
+    console.log(`GET myevents: got ${myEvents.length} events`)
+    
+    res.send(myEvents)  
   }
 });
+
+
+
 
 
 // Update events is_verified status
@@ -75,7 +79,7 @@ router.put("/", async (req, res) =>
   
   const allEventsToUpdate = req.body
 
-  if (await CanUserUpdateEvents(userId, allEventsToUpdate, false))
+  if (await isUserAdmin(user) || await CanUserUpdateEvents(userId, allEventsToUpdate, false))
   {    
     console.log("Events PUT: Updating the following events is_verified status: ", allEventsToUpdate)
     for (const eventToUpdate of allEventsToUpdate)
@@ -96,8 +100,8 @@ router.put("/", async (req, res) =>
     }
   
     console.log("Events PUT: successfully upddated all events is_verified status")
-    var allEventsToday = await eventsDB.getTodayEvents();
-    return res.json(allEventsToday)
+    var allEvents = await eventsDB.getAllEvents();
+    return res.json(allEvents)
   }
   else
   {
@@ -181,7 +185,7 @@ router.post("/", async (req, res) =>
           else
           {
             console.log("added new event succesffuly with event ID: " + newEvent.event_id)
-            const allEvents = await eventsDB.getTodayEvents();
+            const allEvents = await eventsDB.getAllEvents();
             return res.json(allEvents);
           }         
         })    

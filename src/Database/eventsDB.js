@@ -26,8 +26,6 @@ const db = knex({
 const c_eventsTableName = "events"
 
 
-
-
 async function DeleteEvents(eventIDsToDelete)
 {
     console.log("DeleteEvents: Start with events IDs to delete: ", eventIDsToDelete)  
@@ -49,7 +47,7 @@ async function DeleteEvents(eventIDsToDelete)
 
 /* Get today events */
 // Need to add filter by day
-async function getTodayEvents()
+async function getAllEvents()
 {
     var result = await db.select('*').from(c_eventsTableName);
 
@@ -134,10 +132,9 @@ async function updateIsVerifiedEvent(event_id, is_verified)
 
 
 /* Exporting all functions */
-exports.getTodayEvents = getTodayEvents;
 exports.addEvent = addEvent;
 exports.eventExists = eventExists;
 exports.updateIsVerifiedEvent = updateIsVerifiedEvent;
 exports.getMyEvents = getMyEvents;
 exports.DeleteEvents = DeleteEvents
-
+exports.getAllEvents = getAllEvents;
