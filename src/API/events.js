@@ -10,6 +10,10 @@ const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
 
 async function isUserAdmin(userInfo)
 {
+  if (userInfo == null)
+  {
+    return false
+  }
   const email = userInfo.email
   const user = await usersDB.GetUserInfoByEmail(email)
   console.log(user)

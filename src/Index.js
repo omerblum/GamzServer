@@ -32,7 +32,7 @@ if (process.env.PORT)
 }
 
 
-app.listen(port, () => console.log('Server started and running on port ', port));
+app.listen(process.env.PORT || 3006, () => console.log('Server started and running on port ', port));
 
 app.get('/', (req, res) => {
    res.send("Hey Omer, relax, your app is working")
