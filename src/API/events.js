@@ -62,7 +62,7 @@ router.get("/myevents", async (req, res) =>
     if (userInfo == null)
     {
       console.log("failed to get user info from google, returning empty array of events")
-      return res.send([]])
+      return res.send([])
     }
     console.log(`GET myevents: got user ${userInfo.name} info from google`)
     const userId = await usersDB.GetUserIdByEmail(userInfo.email, userInfo.name)
