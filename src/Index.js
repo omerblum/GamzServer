@@ -3,19 +3,19 @@ const cors=require("cors");
 require('dotenv').config();
 
 
-// const corsOptions ={
-//    origin:'*', 
-//    credentials:true,            //access-control-allow-credentials:true
-//    optionSuccessStatus:200,
-// }
+const corsOptions ={
+   origin:'*', 
+   credentials:true,            //access-control-allow-credentials:true
+   optionSuccessStatus:200,
+}
 
 const app = express();
 
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
-// app.use(cors(corsOptions)) // Use this after the variable declaration
-app.use(cors()) 
+app.use(cors(corsOptions)) // Use this after the variable declaration
+// app.use(cors()) 
 
 app.use("/api/events", require("./API/events"));
 app.use("/api/games", require("./API/games"));
