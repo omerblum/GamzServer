@@ -44,7 +44,7 @@ async function addUserIfNotAlready(userInfo)
             email: email,
             owns_business: false
         }
-        successfullyAdded = usersDB.AddUser(user)
+        successfullyAdded = await usersDB.AddUser(user)
         if (successfullyAdded)
         {
             // new user - returning true
@@ -81,12 +81,15 @@ router.post("/", async (req, res) =>
 
 
     const isItNewUser = await addUserIfNotAlready(userInfo)
-    console.log("new user? ", isItNewUser)
+    console.log("PUT signin: new user? ", isItNewUser)
     const userInfoFromDB = await usersDB.GetUserInfoByEmail(email)
-    console.log(userInfoFromDB)
-    userInfoFromDB.isItNewUser= isItNewUser
-    console.log(userInfoFromDB)
+    console.log("PUT signin: info about user from DB is", userInfoFromDB)
+    if (userInfoFromDB == null)
+    {
+        return res.send("failed to add the user")
+    }
     
+    userInfoFromDB.isItNewUser= isItNewUser    
     res.send(userInfoFromDB)
 
 });
