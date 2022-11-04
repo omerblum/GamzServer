@@ -31,6 +31,7 @@ function getUserInfoFromGoogle(token)
       })
      .catch((error) => {
          console.log('getUserInfoFromGoogle: error ' + error);
+         return null;
       });
 }
 
@@ -84,6 +85,12 @@ router.put("/", async (req, res) =>
 {
   const token = req.headers.authorization;
   const user = await getUserInfoFromGoogle(token)
+  if (user == null)
+  {
+    console.log("failed getting info about user, blocking the request")
+    res.status(403)
+    return res.send("User isn't authenticated")
+  }
   const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
   
   const allEventsToUpdate = req.body
@@ -135,6 +142,12 @@ router.post("/", async (req, res) =>
   {
     const token = req.headers.authorization;
     const user = await getUserInfoFromGoogle(token)
+    if (user == null)
+    {
+      console.log("failed getting info about user, blocking the request")
+      res.status(403)
+      return res.send("User isn't authenticated")
+    }
     const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
     const isPlaceOwnedByUser = await usersDB.GetIsUserOwingPlace(userId, placeId)
     const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser)
@@ -207,6 +220,12 @@ router.delete("/", async (req, res) =>
 
   const token = req.headers.authorization;
   const user = await getUserInfoFromGoogle(token)
+  if (user == null)
+  {
+    console.log("failed getting info about user, blocking the request")
+    res.status(403)
+    return res.send("User isn't authenticated")
+  }
   const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
   
   const eventIDsToDelete = req.body.deletedEventsIDs

@@ -64,6 +64,12 @@ router.post("/", async (req, res) =>
     const token = req.headers.authorization;
 
     var userInfo = await getUserInfoFromGoogle(token)
+    if (userInfo == null)
+    {
+        console.log("failed getting info about user, blocking the request")
+        res.status(403)
+        return res.send("User isn't authenticated")
+    }
 
     console.log("PUT signin: successfully got user ", userInfo.name, "deatils from google. checking if email is correct")
     // check here the email is correct, and then check if the user exists, if not add it, if yes send all ok
