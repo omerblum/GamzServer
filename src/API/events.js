@@ -161,56 +161,60 @@ router.post("/", async (req, res) =>
     
     console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
 
-    getGeoAnaNameByPlaceId(placeId)
-      .then(async data => 
+    const placeInfo = await getPlaceInfoByPlaceId(placeId)
+    console.log("place info is:", placeInfo)
+      // .then(async data => 
+      //   {
+        const newEvent = 
         {
-          const newEvent = 
-          {
-            event_id: uuid.v4(),
-            // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
-            game_id: req.body.game_id,
-            place_id: placeId,
-            place_name: place_name,
-            is_verified: isPlaceOwnedByUser,
-            sport: req.body.sport,
-            team_a: req.body.team_a,
-            team_b: req.body.team_b,
-            competition: req.body.competition,
-            event_date: req.body.event_date,
-            event_time: req.body.event_time,
-            lng: data.geometry.location.lng,
-            lat: data.geometry.location.lat,
-            has_volume: req.body.has_volume,
-            user_created_event_id: userId
-          };
+          event_id: uuid.v4(),
+          // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
+          game_id: req.body.game_id,
+          place_id: placeId,
+          place_name: place_name,
+          place_address: placeInfo.formatted_address,
+          place_phone: placeInfo.formatted_phone_number,
+          is_verified: isPlaceOwnedByUser,
+          sport: req.body.sport,
+          team_a: req.body.team_a,
+          team_b: req.body.team_b,
+          competition: req.body.competition,
+          event_date: req.body.event_date,
+          event_time: req.body.event_time,
+          lng: placeInfo.geometry.location.lng,
+          lat: placeInfo.geometry.location.lat,
+          has_volume: req.body.has_volume,
+          user_created_event_id: userId
+        };
+        console.log("new event is:", newEvent)
 
-          var addedSuccessfully = false;
+        var addedSuccessfully = false;
 
-          // TODO: Check if the event already exists
-          if (await eventsDB.eventExists(newEvent))
-          {
-            console.log("The event already exists, nothing to do")
-            return res.sendStatus(201);
-          }
-          else
-          {
-            console.log("Trying to add new event")
-            addedSuccessfully = await eventsDB.addEvent(newEvent);
-          }
+        // TODO: Check if the event already exists
+        if (await eventsDB.eventExists(newEvent))
+        {
+          console.log("The event already exists, nothing to do")
+          return res.sendStatus(201);
+        }
+        else
+        {
+          console.log("Trying to add new event")
+          addedSuccessfully = await eventsDB.addEvent(newEvent);
+        }
 
-          if (!addedSuccessfully) 
-          {
-            console.log("Failed adding new event")
+        if (!addedSuccessfully) 
+        {
+          console.log("Failed adding new event")
 
-            return res.sendStatus(400);
-          }
-          else
-          {
-            console.log("added new event succesffuly with event ID: " + newEvent.event_id)
-            const allEvents = await eventsDB.getAllEvents();
-            return res.json(allEvents);
-          }         
-        })    
+          return res.sendStatus(400);
+        }
+        else
+        {
+          console.log("added new event succesffuly with event ID: " + newEvent.event_id)
+          const allEvents = await eventsDB.getAllEvents();
+          return res.json(allEvents);
+        }         
+        // })    
   }  
 });
 
@@ -227,10 +231,11 @@ router.delete("/", async (req, res) =>
     return res.send("User isn't authenticated")
   }
   const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
+  const isUserAdmin = await usersDB.isUserAdmin(user)
   
   const eventIDsToDelete = req.body.deletedEventsIDs
 
-  if (await CanUserUpdateEvents(userId, eventIDsToDelete, true))
+  if (isUserAdmin || await CanUserUpdateEvents(userId, eventIDsToDelete, true))
   {
     console.log("Events DELETE: deleting the following events: ", eventIDsToDelete)
     const deleteSucceeded = await eventsDB.DeleteEvents(eventIDsToDelete);
@@ -280,9 +285,10 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 }
 
 
-function getGeoAnaNameByPlaceId(placeId)
+function getPlaceInfoByPlaceId(placeId)
 {  
-  const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
+  const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
+  // const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
   var config = 
   {
     method: 'get',
@@ -294,12 +300,12 @@ function getGeoAnaNameByPlaceId(placeId)
   .then(function (response) 
   {
     const data = response.data
-    console.log(`getGeoByPlaceId: Successfuly got location for placeID ${placeId}`);
+    console.log(`getPlaceInfoByPlaceId: Successfuly got location for placeID ${placeId}`);
     return data.result
   })
   .catch(function (error) 
   {
-    console.log(`getGeoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
+    console.log(`getPlaceInfoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
     return null;    
   });
 }
