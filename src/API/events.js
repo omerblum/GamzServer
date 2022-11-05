@@ -16,7 +16,6 @@ async function isUserAdmin(userInfo)
   }
   const email = userInfo.email
   const user = await usersDB.GetUserInfoByEmail(email)
-  console.log(user)
   console.log("isUserAdmin: got user info and is he admin = ", user.is_admin)
   return user.is_admin
 }
@@ -162,13 +161,9 @@ router.post("/", async (req, res) =>
     console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
 
     const placeInfo = await getPlaceInfoByPlaceId(placeId)
-    console.log("place info is:", placeInfo)
-      // .then(async data => 
-      //   {
         const newEvent = 
         {
           event_id: uuid.v4(),
-          // locaion_id should be according to the publisher's business location we should alreayd have from his authentication
           game_id: req.body.game_id,
           place_id: placeId,
           place_name: place_name,
@@ -190,7 +185,6 @@ router.post("/", async (req, res) =>
 
         var addedSuccessfully = false;
 
-        // TODO: Check if the event already exists
         if (await eventsDB.eventExists(newEvent))
         {
           console.log("The event already exists, nothing to do")
@@ -214,7 +208,6 @@ router.post("/", async (req, res) =>
           const allEvents = await eventsDB.getAllEvents();
           return res.json(allEvents);
         }         
-        // })    
   }  
 });
 
@@ -231,11 +224,11 @@ router.delete("/", async (req, res) =>
     return res.send("User isn't authenticated")
   }
   const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
-  const isUserAdmin = await usersDB.isUserAdmin(user)
+  const userIsAdmin = await isUserAdmin(user)
   
   const eventIDsToDelete = req.body.deletedEventsIDs
 
-  if (isUserAdmin || await CanUserUpdateEvents(userId, eventIDsToDelete, true))
+  if (userIsAdmin || await CanUserUpdateEvents(userId, eventIDsToDelete, true))
   {
     console.log("Events DELETE: deleting the following events: ", eventIDsToDelete)
     const deleteSucceeded = await eventsDB.DeleteEvents(eventIDsToDelete);
@@ -265,7 +258,6 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 {
   const eventsUserCanUpdate = await eventsDB.getMyEvents(userID, true)
   let eventsUserCanUpdateIDs = eventsUserCanUpdate.map(e => e.event_id);
-  // console.log("CanUserUpdateEvents: IDs the user can update are: ", eventsUserCanUpdateIDs )
   console.log("CanUserUpdateEvents: IDs the user can update are: ", eventsUserCanUpdateIDs )
 
   console.log("CanUserUpdateEvents: IDs the user trying to update are: ", eventsToCheck )
@@ -288,7 +280,6 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 function getPlaceInfoByPlaceId(placeId)
 {  
   const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
-  // const url ='https://maps.googleapis.com/maps/api/place/details/json?fields=name,geometry&place_id=' + placeId + '&key=' + apiKey
   var config = 
   {
     method: 'get',

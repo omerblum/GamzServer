@@ -28,7 +28,6 @@ const c_gamesTableName = "games"
 async function GetRelevantGames()
 {
     const now = moment().format('YYYY-MM-DD')
-    console.log(now)
     var result = await db.select('*')
     .where('game_date','>=', [now])
     .orderBy('game_date', 'asc')

@@ -101,23 +101,6 @@ async function GetIsUserOwingPlace(userId, placeId)
     } 
 }
 
-function isToday(date) {
-    const today = new Date();
-  
-    // 👇️ Today's date
-    console.log(today);
-  
-    if (
-      today.getFullYear() === date.getFullYear() &&
-      today.getMonth() === date.getMonth() &&
-      today.getDate() === date.getDate()
-    ) {
-      return true;
-    }
-  
-    return false;
-  }
-
 async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser)
 {
     console.log("GetCanUserAddEvent: Checking if user ", userId, "owns place ", placeId)
