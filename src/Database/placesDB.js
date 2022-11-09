@@ -40,10 +40,23 @@ async function GetPlacesIdsUserOwn(userId)
 }
 
 
+async function GetPlaceAbout(placeId)
+{
+    console.log(`GetPlaceAbout: Getting place ${placeId} about info from db`)
+    var aboutPlace = await db(c_placesTableName).select('place_about')
+        .where({place_id: placeId})
+    console.log(`GetPlaceAbout: This is the info about place ${placeId}: ${aboutPlace}`)
+
+    return aboutPlace;   
+}
+
+
+
 
 
 /* Exporting all functions */
 exports.GetPlacesIdsUserOwn = GetPlacesIdsUserOwn;
+exports.GetPlaceAbout = GetPlaceAbout;
 
 
 
