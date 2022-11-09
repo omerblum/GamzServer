@@ -101,12 +101,12 @@ async function GetIsUserOwingPlace(userId, placeId)
     } 
 }
 
-async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser)
+async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdmin)
 {
     console.log("GetCanUserAddEvent: Checking if user ", userId, "owns place ", placeId)
-    if (isPlaceOwnedByUser)
+    if (isPlaceOwnedByUser || userIsAdmin)
     {
-        console.log(`GetCanUserAddEvent: The user ${userId} owns the place, so allowing him to create the event throtling`)
+        console.log(`GetCanUserAddEvent: The user ${userId} either admin or owns the place, so allowing him to create the event throtling`)
         
         return true;
     }

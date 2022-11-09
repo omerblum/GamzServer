@@ -49,7 +49,11 @@ async function DeleteEvents(eventIDsToDelete)
 // Need to add filter by day
 async function getAllEvents()
 {
-    var result = await db.select('*').from(c_eventsTableName);
+    const now = moment().format('YYYY-MM-DD')
+    var result = await db
+        .select('*')    
+        .where('event_date','>=', [now])
+        .from(c_eventsTableName);
 
     return result;
 }

@@ -5,34 +5,9 @@ var axios = require('axios');
 const eventsDB = require('../Database/eventsDB');
 const usersDB = require('../Database/usersDB');
 const placesDB = require('../Database/placesDB');
+const usersAPI = require('./users');
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
-
-async function isUserAdmin(userInfo)
-{
-  if (userInfo == null)
-  {
-    return false
-  }
-  const email = userInfo.email
-  const user = await usersDB.GetUserInfoByEmail(email)
-  console.log("isUserAdmin: got user info and is he admin = ", user.is_admin)
-  return user.is_admin
-}
-
-// TODO: share this method since we use it also in SignIn
-function getUserInfoFromGoogle(token) 
-{  
-    const URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-    return axios.get(URL, { headers: { Authorization: token } })
-     .then(response => {
-         return response.data;
-      })
-     .catch((error) => {
-         console.log('getUserInfoFromGoogle: error ' + error);
-         return null;
-      });
-}
 
 // Get all events 
 router.get("/", async (req, res) => 
@@ -49,8 +24,8 @@ router.get("/myevents", async (req, res) =>
 {
   console.log("GET myevents: start")
   const token = req.headers.authorization;
-  var userInfo = await getUserInfoFromGoogle(token)
-  if (await isUserAdmin(userInfo))
+  var userInfo = await usersAPI.getUserInfoFromGoogle(token)
+  if (await usersAPI.isUserAdmin(userInfo))
   {
     console.log("user is ", userInfo.name, "and he is an admin. Returning all events")
     const allEvents = await eventsDB.getAllEvents()
@@ -76,14 +51,11 @@ router.get("/myevents", async (req, res) =>
 });
 
 
-
-
-
 // Update events is_verified status
 router.put("/", async (req, res) => 
 {
   const token = req.headers.authorization;
-  const user = await getUserInfoFromGoogle(token)
+  const user = await usersAPI.getUserInfoFromGoogle(token)
   if (user == null)
   {
     console.log("failed getting info about user, blocking the request")
@@ -94,7 +66,7 @@ router.put("/", async (req, res) =>
   
   const allEventsToUpdate = req.body
 
-  if (await isUserAdmin(user) || await CanUserUpdateEvents(userId, allEventsToUpdate, false))
+  if (await usersAPI.isUserAdmin(user) || await CanUserUpdateEvents(userId, allEventsToUpdate, false))
   {    
     console.log("Events PUT: Updating the following events is_verified status: ", allEventsToUpdate)
     for (const eventToUpdate of allEventsToUpdate)
@@ -140,7 +112,7 @@ router.post("/", async (req, res) =>
   else
   {
     const token = req.headers.authorization;
-    const user = await getUserInfoFromGoogle(token)
+    const user = await usersAPI.getUserInfoFromGoogle(token)
     if (user == null)
     {
       console.log("failed getting info about user, blocking the request")
@@ -148,8 +120,9 @@ router.post("/", async (req, res) =>
       return res.send("User isn't authenticated")
     }
     const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
+    const userIsAdmin = await usersAPI.isUserAdmin(user)
     const isPlaceOwnedByUser = await usersDB.GetIsUserOwingPlace(userId, placeId)
-    const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser)
+    const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdmin)
     if (!canUserAddEvent)
     {
       console.log("the user can't add event, reached limit, throttling")
@@ -171,8 +144,6 @@ router.post("/", async (req, res) =>
       aboutPlace = null
     }
     
-    console.log("I'm here", aboutPlace)
-
     const placeInfo = await getPlaceInfoByPlaceId(placeId)
         const newEvent = 
         {
@@ -230,7 +201,7 @@ router.delete("/", async (req, res) =>
 {
 
   const token = req.headers.authorization;
-  const user = await getUserInfoFromGoogle(token)
+  const user = await usersAPI.getUserInfoFromGoogle(token)
   if (user == null)
   {
     console.log("failed getting info about user, blocking the request")
@@ -238,7 +209,7 @@ router.delete("/", async (req, res) =>
     return res.send("User isn't authenticated")
   }
   const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
-  const userIsAdmin = await isUserAdmin(user)
+  const userIsAdmin = await usersAPI.isUserAdmin(user)
   
   const eventIDsToDelete = req.body.deletedEventsIDs
 

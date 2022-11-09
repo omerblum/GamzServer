@@ -4,19 +4,8 @@ var axios = require('axios');
 const usersDB = require('../Database/usersDB');
 const uuid = require("uuid");
 var moment = require('moment');
+const usersAPI = require('../API/users');
 
-function getUserInfoFromGoogle(token) 
-{  
-    const URL = "https://www.googleapis.com/oauth2/v3/userinfo"
-    return axios.get(URL, { headers: { Authorization: token } })
-     .then(response => {
-         console.log("getUserInfoFromGoogle: successfully got user info from google");
-         return response.data;
-      })
-     .catch((error) => {
-         console.log('getUserInfoFromGoogle: error ' + error);
-      });
-}
 
 // The method returns false if user already exist, and true if its the first time we add the user
 async function addUserIfNotAlready(userInfo)
@@ -64,7 +53,7 @@ router.post("/", async (req, res) =>
     const email = req.body.email;
     const token = req.headers.authorization;
 
-    var userInfo = await getUserInfoFromGoogle(token)
+    var userInfo = await usersAPI.getUserInfoFromGoogle(token)
     if (userInfo == null)
     {
         console.log("failed getting info about user, blocking the request")
