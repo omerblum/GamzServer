@@ -3,7 +3,7 @@ const router = express.Router();
 var axios = require('axios');
 const usersDB = require('../Database/usersDB');
 const uuid = require("uuid");
-
+var moment = require('moment');
 
 function getUserInfoFromGoogle(token) 
 {  
@@ -42,7 +42,8 @@ async function addUserIfNotAlready(userInfo)
             name: name,
             given_name: given_name,
             email: email,
-            owns_business: false
+            owns_business: false,
+            joined_at:  moment().format('YYYY-MM-DD'),
         }
         successfullyAdded = await usersDB.AddUser(user)
         if (successfullyAdded)

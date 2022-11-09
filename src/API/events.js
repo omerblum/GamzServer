@@ -4,7 +4,7 @@ const uuid = require("uuid");
 var axios = require('axios');
 const eventsDB = require('../Database/eventsDB');
 const usersDB = require('../Database/usersDB');
-
+const placesDB = require('../Database/placesDB');
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
 
@@ -160,6 +160,19 @@ router.post("/", async (req, res) =>
     
     console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
 
+    var aboutPlace = await placesDB.GetPlaceAbout(placeId) 
+    if (aboutPlace.length > 0)
+    {
+      aboutPlace = aboutPlace[0].place_about
+
+    }
+    else
+    {
+      aboutPlace = null
+    }
+    
+    console.log("I'm here", aboutPlace)
+
     const placeInfo = await getPlaceInfoByPlaceId(placeId)
         const newEvent = 
         {
@@ -179,7 +192,8 @@ router.post("/", async (req, res) =>
           lng: placeInfo.geometry.location.lng,
           lat: placeInfo.geometry.location.lat,
           has_volume: req.body.has_volume,
-          user_created_event_id: userId
+          user_created_event_id: userId,
+          about_place: aboutPlace,
         };
         console.log("new event is:", newEvent)
 
