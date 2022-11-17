@@ -130,69 +130,73 @@ router.post("/", async (req, res) =>
       return res.send("Throttling - the user exceeded limit of new events creation today")
     }
 
-    
     console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
+    
+    const placeInfo = await getPlaceInfoByPlaceIdFromGoogle(placeId)
+    await placesDB.AddPlaceIfNotAlready(placeInfo, placeId)
 
-    var aboutPlace = await placesDB.GetPlaceAbout(placeId) 
-    if (aboutPlace.length > 0)
+    var place = await placesDB.GetPlaceInfo(placeId) 
+    var aboutPlace = null
+    var bookonlineLink = null
+
+
+    if (place.length > 0)
     {
-      aboutPlace = aboutPlace[0].place_about
+      place = place[0]
+      aboutPlace = place.place_about
+      bookonlineLink = place.book_online
+    }
+    
+    
+    const newEvent = 
+    {
+      event_id: uuid.v4(),
+      game_id: req.body.game_id,
+      place_id: placeId,
+      place_name: place_name,
+      place_address: placeInfo.formatted_address,
+      place_phone: placeInfo.formatted_phone_number,
+      is_verified: isPlaceOwnedByUser,
+      sport: req.body.sport,
+      team_a: req.body.team_a,
+      team_b: req.body.team_b,
+      competition: req.body.competition,
+      event_date: req.body.event_date,
+      event_time: req.body.event_time,
+      lng: placeInfo.geometry.location.lng,
+      lat: placeInfo.geometry.location.lat,
+      has_volume: req.body.has_volume,
+      user_created_event_id: userId,
+      about_place: aboutPlace,
+      book_online: bookonlineLink,
+    };
+    console.log("new event is:", newEvent)
 
+    var addedSuccessfully = false;
+
+    if (await eventsDB.eventExists(newEvent))
+    {
+      console.log("The event already exists, nothing to do")
+      return res.sendStatus(201);
     }
     else
     {
-      aboutPlace = null
+      console.log("Trying to add new event")
+      addedSuccessfully = await eventsDB.addEvent(newEvent);
     }
-    
-    const placeInfo = await getPlaceInfoByPlaceId(placeId)
-        const newEvent = 
-        {
-          event_id: uuid.v4(),
-          game_id: req.body.game_id,
-          place_id: placeId,
-          place_name: place_name,
-          place_address: placeInfo.formatted_address,
-          place_phone: placeInfo.formatted_phone_number,
-          is_verified: isPlaceOwnedByUser,
-          sport: req.body.sport,
-          team_a: req.body.team_a,
-          team_b: req.body.team_b,
-          competition: req.body.competition,
-          event_date: req.body.event_date,
-          event_time: req.body.event_time,
-          lng: placeInfo.geometry.location.lng,
-          lat: placeInfo.geometry.location.lat,
-          has_volume: req.body.has_volume,
-          user_created_event_id: userId,
-          about_place: aboutPlace,
-        };
-        console.log("new event is:", newEvent)
 
-        var addedSuccessfully = false;
+    if (!addedSuccessfully) 
+    {
+      console.log("Failed adding new event")
 
-        if (await eventsDB.eventExists(newEvent))
-        {
-          console.log("The event already exists, nothing to do")
-          return res.sendStatus(201);
-        }
-        else
-        {
-          console.log("Trying to add new event")
-          addedSuccessfully = await eventsDB.addEvent(newEvent);
-        }
-
-        if (!addedSuccessfully) 
-        {
-          console.log("Failed adding new event")
-
-          return res.sendStatus(400);
-        }
-        else
-        {
-          console.log("added new event succesffuly with event ID: " + newEvent.event_id)
-          const allEvents = await eventsDB.getAllEvents();
-          return res.json(allEvents);
-        }         
+      return res.sendStatus(400);
+    }
+    else
+    {
+      console.log("added new event succesffuly with event ID: " + newEvent.event_id)
+      const allEvents = await eventsDB.getAllEvents();
+      return res.json(allEvents);
+    }         
   }  
 });
 
@@ -262,7 +266,7 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 }
 
 
-function getPlaceInfoByPlaceId(placeId)
+function getPlaceInfoByPlaceIdFromGoogle(placeId)
 {  
   const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
   var config = 
@@ -276,12 +280,12 @@ function getPlaceInfoByPlaceId(placeId)
   .then(function (response) 
   {
     const data = response.data
-    console.log(`getPlaceInfoByPlaceId: Successfuly got location for placeID ${placeId}`);
+    console.log(`getPlaceInfoByPlaceIdFromGoogle: Successfuly got location for placeID ${placeId}`);
     return data.result
   })
   .catch(function (error) 
   {
-    console.log(`getPlaceInfoByPlaceId: Failed while getting ${placeID} geo details. Error: ${error}`);
+    console.log(`getPlaceInfoByPlaceIdFromGoogle: Failed while getting ${placeID} geo details. Error: ${error}`);
     return null;    
   });
 }

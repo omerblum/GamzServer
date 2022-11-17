@@ -40,14 +40,45 @@ async function GetPlacesIdsUserOwn(userId)
 }
 
 
-async function GetPlaceAbout(placeId)
+async function GetPlaceInfo(placeId)
 {
-    console.log(`GetPlaceAbout: Getting place ${placeId} about info from db`)
-    var aboutPlace = await db(c_placesTableName).select('place_about')
+    console.log(`GetPlaceInfo: Getting place ${placeId} info from db`)
+    var placeInfo = await db(c_placesTableName).select('*')
         .where({place_id: placeId})
-    console.log(`GetPlaceAbout: This is the info about place ${placeId}: ${aboutPlace}`)
+    console.log(`GetPlaceInfo: This is the info about place ${placeId}: ${placeInfo}`)
 
-    return aboutPlace;   
+    return placeInfo;   
+}
+
+async function AddPlaceIfNotAlready(placeInfo, placeId)
+{
+    console.log(`AddPlaceIfNotAlready: Checking if place ${placeId} exists`)
+    console.log(placeInfo)
+    var placeInfoFromDB = await db(c_placesTableName).select('*')
+        .where({place_id: placeId})
+    if (placeInfoFromDB.Length > 0)
+    {
+        console.log(`AddPlaceIfNotAlready: Place with ID ${placeId} already exists`)
+        return
+    }
+
+    
+
+    const placeObject = {
+        place_id: placeId,
+        place_name: placeInfo?.name
+    }
+
+    await db(c_placesTableName)
+    .insert(placeObject)
+    .then(console.log(`AddPlaceIfNotAlready: Successfully added place ${placeInfo.name} with id ${placeId}`))
+    .catch(error =>
+        { 
+        console.log(`AddPlaceIfNotAlready: Failed adding place ${placeInfo.name} with id ${placeId} due to error: ${error}`);
+        wasInserted = false
+    })
+    
+    return;   
 }
 
 
@@ -56,7 +87,8 @@ async function GetPlaceAbout(placeId)
 
 /* Exporting all functions */
 exports.GetPlacesIdsUserOwn = GetPlacesIdsUserOwn;
-exports.GetPlaceAbout = GetPlaceAbout;
+exports.GetPlaceInfo = GetPlaceInfo;
+exports.AddPlaceIfNotAlready = AddPlaceIfNotAlready;
 
 
 
