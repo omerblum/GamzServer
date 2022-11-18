@@ -117,13 +117,18 @@ async function eventExists(event)
     }   
 }
 
-async function updateIsVerifiedEvent(event_id, is_verified)
+async function updateEventField(event_id, columnName, value)
 {
-    console.log(`updating the following event ID: ${event_id} with the following is_verified state: ${is_verified}`)
+    if (value === false) {
+        value = 0
+    } else if (value === true) {
+        value = 1
+    }
+    console.log(`updating field ${columnName} to ${value} for the following event ID: ${event_id}`)
     var wasUpdated = true;
     //inserting to table 'events' the new event
     await db(c_eventsTableName)
-        .update({is_verified})
+        .update(columnName, value)
         .where({event_id})
         .catch(error =>
         { 
@@ -138,7 +143,7 @@ async function updateIsVerifiedEvent(event_id, is_verified)
 /* Exporting all functions */
 exports.addEvent = addEvent;
 exports.eventExists = eventExists;
-exports.updateIsVerifiedEvent = updateIsVerifiedEvent;
+exports.updateEventField = updateEventField;
 exports.getMyEvents = getMyEvents;
 exports.DeleteEvents = DeleteEvents
 exports.getAllEvents = getAllEvents;

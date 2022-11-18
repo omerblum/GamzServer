@@ -51,7 +51,7 @@ router.get("/myevents", async (req, res) =>
 });
 
 
-// Update events is_verified status
+// Update events fields
 router.put("/", async (req, res) => 
 {
   const token = req.headers.authorization;
@@ -68,20 +68,27 @@ router.put("/", async (req, res) =>
 
   if (await usersAPI.isUserAdmin(user) || await CanUserUpdateEvents(userId, allEventsToUpdate, false))
   {    
-    console.log("Events PUT: Updating the following events is_verified status: ", allEventsToUpdate)
+    console.log("Events PUT: Updating the following events: ", allEventsToUpdate)
     for (const eventToUpdate of allEventsToUpdate)
     {
       const event_id = eventToUpdate.event_id      
       const is_verified = eventToUpdate.is_verified
+      const has_volume = eventToUpdate.has_volume
       console.log(`Events PUT: ${event_id} with the following is_verified status: ${is_verified}`)
-      const updateSucceeded = await eventsDB.updateIsVerifiedEvent(event_id, is_verified)
+      let updateSucceeded = true
+      if (is_verified !== undefined) {
+        updateSucceeded = updateSucceeded || await eventsDB.updateEventField(event_id, "is_verified", is_verified)
+      }
+      if (updateSucceeded && has_volume !== undefined) {
+        updateSucceeded = updateSucceeded || await eventsDB.updateEventField(event_id, "has_volume", has_volume)
+      }
       if (updateSucceeded)
       {
-        console.log("Events PUT: updated successfully event with ID " + event_id + " is_verified status to " + is_verified)
+        console.log("Events PUT: updated successfully event with ID " + event_id)
       }
       else
       {
-        console.log("Events PUT: failed updating is_verified status of event with ID " + event_id)
+        console.log("Events PUT: failed updating status of event with ID " + event_id)
         return res.status(400)
       }      
     }
