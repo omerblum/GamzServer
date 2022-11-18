@@ -72,15 +72,13 @@ router.put("/", async (req, res) =>
     for (const eventToUpdate of allEventsToUpdate)
     {
       const event_id = eventToUpdate.event_id      
-      const is_verified = eventToUpdate.is_verified
       const has_volume = eventToUpdate.has_volume
-      console.log(`Events PUT: ${event_id} with the following is_verified status: ${is_verified}`)
+      console.log(`Events PUT: updating ${event_id}`)
       let updateSucceeded = true
-      if (is_verified !== undefined) {
-        updateSucceeded = updateSucceeded || await eventsDB.updateEventField(event_id, "is_verified", is_verified)
-      }
-      if (updateSucceeded && has_volume !== undefined) {
-        updateSucceeded = updateSucceeded || await eventsDB.updateEventField(event_id, "has_volume", has_volume)
+      if (has_volume !== undefined) {
+        if (!await eventsDB.updateEventField(event_id, "has_volume", has_volume)) {
+          updateSucceeded = false
+        }
       }
       if (updateSucceeded)
       {
@@ -93,7 +91,7 @@ router.put("/", async (req, res) =>
       }      
     }
   
-    console.log("Events PUT: successfully upddated all events is_verified status")
+    console.log("Events PUT: successfully upddated all given events")
     var allEvents = await eventsDB.getAllEvents();
     return res.json(allEvents)
   }
