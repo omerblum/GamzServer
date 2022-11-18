@@ -113,21 +113,6 @@ async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdm
     return false;
 }
 
-function isSameDate(date, today) 
-{  
-    console.log("checking if the following are the same date: ", date, today)
-    if (
-      today.getFullYear() === date.getFullYear() &&
-      today.getMonth() === date.getMonth() &&
-      today.getDate() === date.getDate()
-    ) 
-    {
-      return true;
-    }
-  
-    return false;
-  }
-
 /* Exporting all functions */
 exports.AddUser = AddUser;
 exports.GetUserIdByEmail = GetUserIdByEmail;

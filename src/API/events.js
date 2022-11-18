@@ -128,7 +128,6 @@ router.post("/", async (req, res) =>
       res.status(403)
       return res.send("Access Denied.")
     }
-
     
     console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
 
@@ -152,7 +151,6 @@ router.post("/", async (req, res) =>
           place_name: place_name,
           place_address: placeInfo.formatted_address,
           place_phone: placeInfo.formatted_phone_number,
-          is_verified: isPlaceOwnedByUser,
           sport: req.body.sport,
           team_a: req.body.team_a,
           team_b: req.body.team_b,
