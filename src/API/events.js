@@ -101,7 +101,6 @@ router.put("/", async (req, res) =>
 // Add new event
 router.post("/", async (req, res) => 
 {    
-
   const placeId = req.body.place_id
   const place_name = req.body.place_name
   if (placeId === "")
@@ -125,9 +124,9 @@ router.post("/", async (req, res) =>
     const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdmin)
     if (!canUserAddEvent)
     {
-      console.log("the user can't add event, reached limit, throttling")
-      res.status(429)
-      return res.send("Throttling - the user exceeded limit of new events creation today")
+      console.log("the user can't add event")
+      res.status(403)
+      return res.send("Access Denied.")
     }
 
     
