@@ -72,7 +72,7 @@ router.post("/", async (req, res) =>
     {
         console.log("PUT signin: email don't match: given email is: ", email, " but email we got from google is ", userInfo.email, "returning unauth")
         res.status(401)
-        res.send(false)
+        return res.send(false)
     }
 
 
