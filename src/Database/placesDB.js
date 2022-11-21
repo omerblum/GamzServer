@@ -39,6 +39,33 @@ async function GetPlacesIdsUserOwn(userId)
     return places;   
 }
 
+async function GetAllPlaces()
+{
+    console.log(`GetAllPlaces: Returning all places`)
+    var allPlaces = await db(c_placesTableName).select('*')
+
+    return allPlaces;  
+}
+
+async function GetAllUnauthorizedPlaces()
+{
+    console.log(`GetAllUnauthorizedPlaces: Returning all unauthorized places`)
+    var allUnauthPlaces = await db(c_placesTableName)
+    .select('*')
+    .where({is_authorized: 0})
+
+    return allUnauthPlaces;  
+}
+
+async function GetAllauthorizedPlaces()
+{
+    console.log(`GetAllauthorizedPlaces: Returning all unauthorized places`)
+    var allauthPlaces = await db(c_placesTableName)
+    .select('*')
+    .where({is_authorized: 1})
+
+    return allauthPlaces;  
+}
 
 async function GetPlaceInfo(placeId)
 {
@@ -48,6 +75,22 @@ async function GetPlaceInfo(placeId)
     console.log(`GetPlaceInfo: This is the info about place ${placeId}: ${placeInfo}`)
 
     return placeInfo;   
+}
+
+async function ApprovePlace(placeId)
+{
+    const wasUpdated = true;
+
+    await db(c_placesTableName)
+        .update("is_authorized", 1)
+        .where({place_id: placeId})
+        .catch(error =>
+        { 
+            console.log(error);
+            wasUpdated = false
+        })
+    
+    return wasUpdated
 }
 
 async function AddPlaceIfNotAlready(placeInfo, placeId)
@@ -89,7 +132,8 @@ async function AddPlaceIfNotAlready(placeInfo, placeId)
 exports.GetPlacesIdsUserOwn = GetPlacesIdsUserOwn;
 exports.GetPlaceInfo = GetPlaceInfo;
 exports.AddPlaceIfNotAlready = AddPlaceIfNotAlready;
-
-
-
+exports.GetAllPlaces = GetAllPlaces;
+exports.GetAllUnauthorizedPlaces = GetAllUnauthorizedPlaces;
+exports.GetAllauthorizedPlaces = GetAllauthorizedPlaces;
+exports.ApprovePlace = ApprovePlace;
 
