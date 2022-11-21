@@ -23,6 +23,7 @@ app.use("/api/sports", require("./API/sports"));
 app.use("/api/competition", require("./API/competition"));
 app.use("/api/teamA", require("./API/teamA"));
 app.use("/api/teamB", require("./API/teamB"));
+app.use("/api/places", require("./API/places"));
 
 app.use("/signin", require("./Security/SignIn"));
 var port = 3006
