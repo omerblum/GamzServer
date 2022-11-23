@@ -157,7 +157,6 @@ async function GetOwnerIdFromPlaceId(placeID)
     .where({place_id: placeID})
 
     return userID;
-
 }
 
 
