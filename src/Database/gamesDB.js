@@ -54,7 +54,23 @@ async function gameExists(game)
     {
         console.log("game exist")
         return true;
+    }   
+}
 
+// Returns game info if exists
+async function GetGameInfoByGameIDFromDB(gameID)
+{
+    var gamesFound = await db(c_gamesTableName).select()
+                    .where({game_id: gameID})
+    if (gamesFound.length === 0)
+    {
+        console.log("game doesn't exist")
+        return null;
+    }
+    else
+    {
+        console.log("game exist")
+        return gamesFound[0];
     }   
 }
  
@@ -62,5 +78,6 @@ async function gameExists(game)
 /* Exporting all functions */
 exports.GetRelevantGames = GetRelevantGames;
 exports.gameExists = gameExists;
+exports.GetGameInfoByGameIDFromDB = GetGameInfoByGameIDFromDB;
 
 

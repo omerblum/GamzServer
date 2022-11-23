@@ -72,7 +72,6 @@ async function GetPlaceInfo(placeId)
     console.log(`GetPlaceInfo: Getting place ${placeId} info from db`)
     var placeInfo = await db(c_placesTableName).select('*')
         .where({place_id: placeId})
-    console.log(`GetPlaceInfo: This is the info about place ${placeId}: ${placeInfo}`)
 
     return placeInfo;   
 }

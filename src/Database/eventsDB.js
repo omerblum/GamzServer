@@ -83,11 +83,11 @@ async function getMyEvents(userID, selectOnlyEventIDs)
     return events[0];
 }
 
-/* Add new event */
-async function addEvent(newEvent)
+/* Add new events */
+async function addEvents(newEvent)
 {
     var wasInserted = true;
-    //inserting to table 'events' the new event
+    //inserting to table 'events' the new events
     await db(c_eventsTableName)
         .insert(newEvent)
         .catch(error =>
@@ -98,6 +98,8 @@ async function addEvent(newEvent)
     
     return wasInserted;
 }
+
+
 
 async function eventExists(event)
 {
@@ -141,7 +143,7 @@ async function updateEventField(event_id, columnName, value)
 
 
 /* Exporting all functions */
-exports.addEvent = addEvent;
+exports.addEvents = addEvents;
 exports.eventExists = eventExists;
 exports.updateEventField = updateEventField;
 exports.getMyEvents = getMyEvents;
