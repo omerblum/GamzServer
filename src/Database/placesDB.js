@@ -25,6 +25,14 @@ const db = knex({
 const c_placesTableName = "places"
 
 
+async function GetNumberOfPlaces()
+{
+    console.log(`GetNumberOfPlaces: Getting number of places`)
+    var places = await db(c_placesTableName).select('*')
+                   
+    return places.length
+}
+
 // Returns array of places IDs that given user own
 async function GetPlacesIdsUserOwn(userId)
 {
@@ -102,9 +110,7 @@ async function AddPlaceIfNotAlready(placeInfo, placeId)
     {
         console.log(`AddPlaceIfNotAlready: Place with ID ${placeId} already exists`)
         return
-    }
-
-    
+    }    
 
     const placeObject = {
         place_id: placeId,
@@ -123,8 +129,36 @@ async function AddPlaceIfNotAlready(placeInfo, placeId)
     return;   
 }
 
+async function AddNewPlace(place)
+{
+    console.log("Adding new place: ", place)
+    var wasInserted = true;
+
+    await db(c_placesTableName)
+    .insert(place)
+    .then(console.log(`AddNewPlace: Successfully added place`))
+    .catch(error =>
+        { 
+        console.log(`AddNewPlace: Failed adding place due to error: ${error}`);
+        wasInserted = false
+    })
+    
+    return wasInserted;   
+}
 
 
+async function GetOwnerIdFromPlaceId(placeID)
+{
+    console.log("GetOwnerIdFromPlaceId: finding owner of place ", placeID)
+    
+    
+    var userID = await db(c_placesTableName)
+    .select('owner_id')
+    .where({place_id: placeID})
+
+    return userID;
+
+}
 
 
 /* Exporting all functions */
@@ -135,4 +169,7 @@ exports.GetAllPlaces = GetAllPlaces;
 exports.GetAllUnauthorizedPlaces = GetAllUnauthorizedPlaces;
 exports.GetAllauthorizedPlaces = GetAllauthorizedPlaces;
 exports.ApprovePlace = ApprovePlace;
+exports.GetNumberOfPlaces = GetNumberOfPlaces;
+exports.AddNewPlace = AddNewPlace;
+exports.GetOwnerIdFromPlaceId = GetOwnerIdFromPlaceId;
 

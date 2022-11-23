@@ -141,6 +141,14 @@ async function updateEventField(event_id, columnName, value)
     return wasUpdated;
 }
 
+async function GetNumberOfEvents()
+{
+    console.log(`GetNumberOfEvents: Getting number of events`)
+    var events = await db(c_eventsTableName).select('*')
+                   
+    return events.length
+}
+
 
 /* Exporting all functions */
 exports.addEvents = addEvents;
@@ -149,3 +157,4 @@ exports.updateEventField = updateEventField;
 exports.getMyEvents = getMyEvents;
 exports.DeleteEvents = DeleteEvents
 exports.getAllEvents = getAllEvents;
+exports.GetNumberOfEvents = GetNumberOfEvents;

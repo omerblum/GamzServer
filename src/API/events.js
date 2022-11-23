@@ -7,8 +7,7 @@ const usersDB = require('../Database/usersDB');
 const gamesDB = require('../Database/gamesDB');
 const placesDB = require('../Database/placesDB');
 const usersAPI = require('./users');
-
-const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
+const placesUtils = require('../Utils/PlacesUtils')
 
 // Get all events 
 router.get("/", async (req, res) => 
@@ -141,7 +140,7 @@ router.post("/addMultipleEvents", async (req, res) =>
   
   console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
   
-  const placeInfo = await getPlaceInfoByPlaceIdFromGoogle(placeId)
+  const placeInfo = await placesUtils.getPlaceInfoByPlaceIdFromGoogle(placeId)
   await placesDB.AddPlaceIfNotAlready(placeInfo, placeId)
 
   var place = await placesDB.GetPlaceInfo(placeId) 
@@ -220,6 +219,7 @@ router.post("/addMultipleEvents", async (req, res) =>
 });
 
 
+
 router.delete("/", async (req, res) => 
 {
 
@@ -285,28 +285,6 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 }
 
 
-function getPlaceInfoByPlaceIdFromGoogle(placeId)
-{  
-  const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
-  var config = 
-  {
-    method: 'get',
-    url: url,
-    headers: { }
-  };
-  
-  return axios(config)
-  .then(function (response) 
-  {
-    const data = response.data
-    console.log(`getPlaceInfoByPlaceIdFromGoogle: Successfuly got location for placeID ${placeId}`);
-    return data.result
-  })
-  .catch(function (error) 
-  {
-    console.log(`getPlaceInfoByPlaceIdFromGoogle: Failed while getting ${placeID} geo details. Error: ${error}`);
-    return null;    
-  });
-}
+
 
 module.exports = router;
