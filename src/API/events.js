@@ -116,7 +116,7 @@ router.post("/addMultipleEvents", async (req, res) =>
     return res.sendStatus(400);
   }
 
-  console.log(`Adding new ${gameIDs.length} events`)
+  console.log(`Adding new ${gamesIDs.length} events`)
 
   const token = req.headers.authorization;
   const user = await usersAPI.getUserInfoFromGoogle(token)
