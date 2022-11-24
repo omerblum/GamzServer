@@ -98,10 +98,9 @@ router.put("/", async (req, res) =>
     is_authorized: 0
   }
 
-  console.log("adding new place: ", newPlace)
-
   const sucess = await placesDB.AddNewPlace(newPlace)
-  console.log(sucess)
+
+  console.log(`Added new place with ID ${placeId} ended with success = ${sucess}`)
 
   return res.json(sucess)
 });
@@ -110,8 +109,6 @@ router.put("/", async (req, res) =>
 router.post("/approvePlace", async (req, res) => 
 {
   const token = req.headers.authorization;
-  console.log(token)
-  console.log("approving")
   var userInfo = await usersAPI.getUserInfoFromGoogle(token)
   if (!await usersAPI.isUserAdmin(userInfo))
   {
@@ -130,9 +127,8 @@ router.post("/approvePlace", async (req, res) =>
   if (userId.length > 0)
   {
     userId = userId[0].owner_id
-    console.log("userID issss ", userId)
     const updated = await usersDB.UpdateUsersOwnsBusines(userId)
-    console.log("user updated = ", updated)
+    console.log(`user with ID ${userId} updated = ${updated}`)
   }
   
   return res.send(placeApproved)  
