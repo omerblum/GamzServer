@@ -17,6 +17,25 @@ router.get("/", async (req, res) =>
   res.send(allEvents)  
 });
 
+router.get("/byplace/:id", async (req, res) => 
+{
+  console.log("GET place events: start")
+  const placeId = req.params.id
+  const token = req.headers.authorization;
+  var userInfo = await usersAPI.getUserInfoFromGoogle(token)
+  if (userInfo == null)
+    {
+      console.log("failed to get user info from google, returning empty array of events")
+      return res.send([])
+    }
+    console.log(`GET place events: got user ${userInfo.name} info from google`)
+    
+    var events = await eventsDB.getPlaceEvents(placeId);
+    
+    console.log(`GET place events: got ${events.length} events`)
+    
+    res.send(events)  
+});
 
 
 // Get specific place owner events
@@ -42,7 +61,7 @@ router.get("/myevents", async (req, res) =>
     console.log(`GET myevents: got user ${userInfo.name} info from google`)
     const userId = await usersDB.GetUserIdByEmail(userInfo.email, userInfo.name)
     
-    var myEvents = await eventsDB.getMyEvents(userId, false);
+    var myEvents = await eventsDB.getPlaceEvents(userId, false);
     
     console.log(`GET myevents: got ${myEvents.length} events`)
     

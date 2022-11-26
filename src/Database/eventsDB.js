@@ -83,6 +83,19 @@ async function getMyEvents(userID, selectOnlyEventIDs)
     return events[0];
 }
 
+async function getPlaceEvents(placeId)
+{
+    console.log(`getPlaceEvents: Fetching events of place`)
+    const now = moment().format('YYYY-MM-DD')
+    var result = await db
+        .select('*')    
+        .where('event_date','>=', [now])
+        .where({place_id: placeId})
+        .from(c_eventsTableName);
+
+    return result;
+}
+
 /* Add new event */
 async function addEvent(newEvent)
 {
@@ -147,3 +160,4 @@ exports.updateEventField = updateEventField;
 exports.getMyEvents = getMyEvents;
 exports.DeleteEvents = DeleteEvents
 exports.getAllEvents = getAllEvents;
+exports.getPlaceEvents = getPlaceEvents;
