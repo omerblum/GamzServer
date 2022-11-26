@@ -4,10 +4,10 @@ const uuid = require("uuid");
 var axios = require('axios');
 const eventsDB = require('../Database/eventsDB');
 const usersDB = require('../Database/usersDB');
+const gamesDB = require('../Database/gamesDB');
 const placesDB = require('../Database/placesDB');
 const usersAPI = require('./users');
-
-const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
+const placesUtils = require('../Utils/PlacesUtils')
 
 // Get all events 
 router.get("/", async (req, res) => 
@@ -122,105 +122,121 @@ router.put("/", async (req, res) =>
   }
 });
 
-// Add new event
-router.post("/", async (req, res) => 
+// Add new events
+router.post("/addMultipleEvents", async (req, res) => 
 {    
   const placeId = req.body.place_id
   const place_name = req.body.place_name
-  if (placeId === "")
+  const has_volume = req.body.has_volume
+  const gamesIDs = req.body.gamesIDs
+  if (placeId === "" || gamesIDs?.length < 1)
   {
-    console.log("post: recieved empty place ID, can't add the event")
+    console.log("post: recieved empty place ID or no game IDs, returning")
     return res.sendStatus(400);
   }
-  else
+
+  console.log(`Adding new ${gamesIDs.length} events`)
+
+  const token = req.headers.authorization;
+  const user = await usersAPI.getUserInfoFromGoogle(token)
+  if (user == null)
   {
-    const token = req.headers.authorization;
-    const user = await usersAPI.getUserInfoFromGoogle(token)
-    if (user == null)
-    {
-      console.log("failed getting info about user, blocking the request")
-      res.status(403)
-      return res.send("User isn't authenticated")
-    }
-    const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
-    const userIsAdmin = await usersAPI.isUserAdmin(user)
-    const isPlaceOwnedByUser = await usersDB.GetIsUserOwingPlace(userId, placeId)
-    const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdmin)
-    if (!canUserAddEvent)
-    {
-      console.log("the user can't add event")
-      res.status(403)
-      return res.send("Access Denied.")
-    }
-    
-    console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
-    
-    const placeInfo = await getPlaceInfoByPlaceIdFromGoogle(placeId)
-    await placesDB.AddPlaceIfNotAlready(placeInfo, placeId)
+    console.log("failed getting info about user, blocking the request")
+    res.status(403)
+    return res.send("User isn't authenticated")
+  }
 
-    var place = await placesDB.GetPlaceInfo(placeId) 
-    var aboutPlace = null
-    var bookonlineLink = null
+  const userId = await usersDB.GetUserIdByEmail(user.email, user.name)
+  const userIsAdmin = await usersAPI.isUserAdmin(user)
+  const isPlaceOwnedByUser = await usersDB.GetIsUserOwingPlace(userId, placeId)
+  const canUserAddEvent = await usersDB.GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdmin)
+  if (!canUserAddEvent)
+  {
+    console.log("the user can't add event")
+    res.status(403)
+    return res.send("Access Denied.")
+  }
+  
+  console.log("is the user ", userId, "owns place ", place_name, "with place ID: ", placeId, "? ", isPlaceOwnedByUser)
+  
+  const placeInfo = await placesUtils.getPlaceInfoByPlaceIdFromGoogle(placeId)
+  await placesDB.AddPlaceIfNotAlready(placeInfo, placeId)
 
+  var place = await placesDB.GetPlaceInfo(placeId) 
+  var aboutPlace = null
+  var bookonlineLink = null
 
-    if (place.length > 0)
+  if (place.length > 0)
+  {
+    place = place[0]
+    aboutPlace = place.place_about
+    bookonlineLink = place.book_online
+  }
+
+  var eventsToAdd = []
+
+  for (const gameID of gamesIDs)
+  {
+    console.log("now handling game ID: ", gameID)
+    console.log("Getting game info of game ID: ", gameID)
+    const gameInfo = await gamesDB.GetGameInfoByGameIDFromDB(gameID)
+    if (gameInfo == null)
     {
-      place = place[0]
-      aboutPlace = place.place_about
-      bookonlineLink = place.book_online
+      console.log(`Game with ID ${gameID} doesn't exist`)
+      continue;
     }
-    
-    
+
+    console.log("game info is: ", gameInfo)
+
     const newEvent = 
     {
       event_id: uuid.v4(),
-      game_id: req.body.game_id,
+      game_id: gameID,
       place_id: placeId,
       place_name: place_name,
       place_address: placeInfo.formatted_address,
       place_phone: placeInfo.formatted_phone_number,
-      sport: req.body.sport,
-      team_a: req.body.team_a,
-      team_b: req.body.team_b,
-      competition: req.body.competition,
-      event_date: req.body.event_date,
-      event_time: req.body.event_time,
+      sport: gameInfo.sport,
+      team_a: gameInfo.team_a,
+      team_b: gameInfo.team_b,
+      competition: gameInfo.competition,
+      event_date: gameInfo.game_date,
+      event_time: gameInfo.game_time,
       lng: placeInfo.geometry.location.lng,
       lat: placeInfo.geometry.location.lat,
-      has_volume: req.body.has_volume,
+      has_volume: has_volume,
       user_created_event_id: userId,
       about_place: aboutPlace,
       book_online: bookonlineLink,
     };
-    console.log("new event is:", newEvent)
-
-    var addedSuccessfully = false;
 
     if (await eventsDB.eventExists(newEvent))
     {
       console.log("The event already exists, nothing to do")
-      return res.sendStatus(201);
+      continue;
     }
-    else
-    {
-      console.log("Trying to add new event")
-      addedSuccessfully = await eventsDB.addEvent(newEvent);
-    }
+    
+    eventsToAdd.push(newEvent)
 
-    if (!addedSuccessfully) 
-    {
-      console.log("Failed adding new event")
+  }
 
-      return res.sendStatus(400);
-    }
-    else
-    {
-      console.log("added new event succesffuly with event ID: " + newEvent.event_id)
-      const allEvents = await eventsDB.getAllEvents();
-      return res.json(allEvents);
-    }         
+  var addedSuccessfully = false;
+  console.log(`Trying to add the new ${eventsToAdd.length} events`)
+  addedSuccessfully = await eventsDB.addEvents(eventsToAdd);
+  if (!addedSuccessfully) 
+  {
+    console.log("Failed adding new events")
+  }
+  else
+  {
+    console.log("added new events succesffuly")
   }  
+
+  const allEvents = await eventsDB.getAllEvents();
+  return res.json(allEvents);    
+   
 });
+
 
 
 router.delete("/", async (req, res) => 
@@ -288,28 +304,6 @@ async function CanUserUpdateEvents(userID, eventsToCheck, eventsToCheckAreEventI
 }
 
 
-function getPlaceInfoByPlaceIdFromGoogle(placeId)
-{  
-  const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
-  var config = 
-  {
-    method: 'get',
-    url: url,
-    headers: { }
-  };
-  
-  return axios(config)
-  .then(function (response) 
-  {
-    const data = response.data
-    console.log(`getPlaceInfoByPlaceIdFromGoogle: Successfuly got location for placeID ${placeId}`);
-    return data.result
-  })
-  .catch(function (error) 
-  {
-    console.log(`getPlaceInfoByPlaceIdFromGoogle: Failed while getting ${placeID} geo details. Error: ${error}`);
-    return null;    
-  });
-}
+
 
 module.exports = router;

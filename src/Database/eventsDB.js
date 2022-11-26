@@ -96,11 +96,11 @@ async function getPlaceEvents(placeId)
     return result;
 }
 
-/* Add new event */
-async function addEvent(newEvent)
+/* Add new events */
+async function addEvents(newEvent)
 {
     var wasInserted = true;
-    //inserting to table 'events' the new event
+    //inserting to table 'events' the new events
     await db(c_eventsTableName)
         .insert(newEvent)
         .catch(error =>
@@ -111,6 +111,8 @@ async function addEvent(newEvent)
     
     return wasInserted;
 }
+
+
 
 async function eventExists(event)
 {
@@ -152,12 +154,21 @@ async function updateEventField(event_id, columnName, value)
     return wasUpdated;
 }
 
+async function GetNumberOfEvents()
+{
+    console.log(`GetNumberOfEvents: Getting number of events`)
+    var events = await db(c_eventsTableName).select('*')
+                   
+    return events.length
+}
+
 
 /* Exporting all functions */
-exports.addEvent = addEvent;
+exports.addEvents = addEvents;
 exports.eventExists = eventExists;
 exports.updateEventField = updateEventField;
 exports.getMyEvents = getMyEvents;
 exports.DeleteEvents = DeleteEvents
 exports.getAllEvents = getAllEvents;
 exports.getPlaceEvents = getPlaceEvents;
+exports.GetNumberOfEvents = GetNumberOfEvents;

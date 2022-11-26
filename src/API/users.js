@@ -3,7 +3,7 @@ const router = express.Router();
 var axios = require('axios');
 const usersDB = require('../Database/usersDB');
 
-function getUserInfoFromGoogle(token) 
+async function getUserInfoFromGoogle(token) 
 {  
     const URL = "https://www.googleapis.com/oauth2/v3/userinfo"
     return axios.get(URL, { headers: { Authorization: token } })
@@ -28,5 +28,8 @@ async function isUserAdmin(userInfo)
   return user.is_admin
 }
 
+
 exports.getUserInfoFromGoogle = getUserInfoFromGoogle;
 exports.isUserAdmin = isUserAdmin;
+
+

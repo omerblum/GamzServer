@@ -26,6 +26,23 @@ const c_placesTableName = "places"
 const c_maxEventsCreationInADay = 5;
 
 
+// Update user owns business
+async function UpdateUsersOwnsBusines(user_id)
+{
+    console.log("UpdateUsersOwnsBusines: Approving user ", user_id)
+    const wasUpdated = true;
+    await db(c_usersTableName)
+        .update("owns_business", 1)
+        .where({user_id})
+        .catch(error =>
+        { 
+            console.log(error);
+            wasUpdated = false
+        })
+
+    return wasUpdated;
+}
+
 /* Add new event */
 async function AddUser(newUser)
 {
@@ -45,7 +62,13 @@ async function AddUser(newUser)
         return wasInserted;
 }
 
-
+async function GetNumberOfUsers()
+{
+    console.log(`GetNumberOfUsers: Getting number of users`)
+    var users = await db(c_usersTableName).select('*')
+                   
+    return users.length
+}
 
 
 async function GetUserInfoByEmail(email)
@@ -62,8 +85,7 @@ async function GetUserInfoByEmail(email)
     {
         console.log(`GetUserInfoByEmail: user with email '${email}' exist`)
         return userFound[0];
-    }   
-
+    }  
 }
 
 // Returns if a game exist or not
@@ -113,12 +135,16 @@ async function GetCanUserAddEvent(userId, placeId, isPlaceOwnedByUser, userIsAdm
     return false;
 }
 
+
+
 /* Exporting all functions */
 exports.AddUser = AddUser;
 exports.GetUserIdByEmail = GetUserIdByEmail;
 exports.GetIsUserOwingPlace = GetIsUserOwingPlace;
 exports.GetCanUserAddEvent = GetCanUserAddEvent;
 exports.GetUserInfoByEmail = GetUserInfoByEmail;
+exports.GetNumberOfUsers = GetNumberOfUsers;
+exports.UpdateUsersOwnsBusines = UpdateUsersOwnsBusines;
 
 
 
