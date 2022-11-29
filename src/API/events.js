@@ -21,14 +21,6 @@ router.get("/byplace/:id", async (req, res) =>
 {
   console.log("GET place events: start")
   const placeId = req.params.id
-  const token = req.headers.authorization;
-  var userInfo = await usersAPI.getUserInfoFromGoogle(token)
-  if (userInfo == null)
-    {
-      console.log("failed to get user info from google, returning empty array of events")
-      return res.send([])
-    }
-    console.log(`GET place events: got user ${userInfo.name} info from google`)
     
     var events = await eventsDB.getPlaceEvents(placeId);
     
