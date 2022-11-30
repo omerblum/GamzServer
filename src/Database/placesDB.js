@@ -119,10 +119,10 @@ async function AddPlaceIfNotAlready(placeInfo, placeId)
 
     await db(c_placesTableName)
     .insert(placeObject)
-    .then(console.log(`AddPlaceIfNotAlready: Successfully added place ${placeInfo.name} with id ${placeId}`))
+    .then(console.log(`AddPlaceIfNotAlready: Successfully added place ${placeInfo?.name} with id ${placeId}`))
     .catch(error =>
         { 
-        console.log(`AddPlaceIfNotAlready: Failed adding place ${placeInfo.name} with id ${placeId} due to error: ${error}`);
+        console.log(`AddPlaceIfNotAlready: Failed adding place ${placeInfo?.name} with id ${placeId} due to error: ${error}`);
         wasInserted = false
     })
     
