@@ -134,6 +134,14 @@ router.post("/approvePlace", async (req, res) =>
   return res.send(placeApproved)  
 });
 
+// Get all unauthorized places 
+router.get("/:id/photos", async (req, res) => 
+{
+  const placeId = req.params.id
+  console.log(placeId)
+  var photos = await placeUtils.getPlacePhotosByPlaceIdFromGoogle(placeId);
+  return res.send(photos)  
+});
 
 
 module.exports = router;
