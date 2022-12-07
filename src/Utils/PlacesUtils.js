@@ -4,7 +4,7 @@ var axios = require('axios');
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY
 
-const getPlaceInfoByPlaceIdFromGoogle = (placeId) =>
+function getPlaceInfoByPlaceIdFromGoogle(placeId)
 {  
   const url ='https://maps.googleapis.com/maps/api/place/details/json?place_id=' + placeId + '&key=' + apiKey + '&language=iw&fields=name,geometry,formatted_phone_number,formatted_address'
   var config = 
